@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SatIndustry</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}" />  <-- Updated CSS link
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-velocity"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="button-container">
+        <button id="toggle-clouds" class="modern-button">
+            <i class="fas fa-cloud"></i>
+        </button>
+        <button id="toggle-wind" class="modern-button">
+            <i class="fas fa-wind"></i>
+        </button>
+        <button id="toggle-aqi" class="modern-button">
+            <i class="fas fa-smog"></i>
+        </button>
+    </div>
+
+    <div id="search-container">
+        <input type="text" id="search-input" placeholder="Enter location...">
+        <button id="search-button"><i class="fas fa-search"></i></button>
+        <button id="location-button"><i class="fas fa-location-arrow"></i></button>
+    </div>
+    <div id="info-panel">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <div class="panel-content">
+            <h1 id="current-temp">--°C</h1>
+            <div id="coordinates"></div>
+            <div class="info-header">Air Quality</div>
+            <table id="aqi-table"></table>
+            <canvas id="chart"></canvas>
+            <canvas id="chart2"></canvas>
+        </div>
+    </div>
+    <div id="spinner" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'mainapp/script.js' %}"></script>  <-- Updated JS link
+</body>
+
+</html>
