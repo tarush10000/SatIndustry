@@ -882,3 +882,49 @@ section {
         flex-direction: column;
     }
 }
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;  /* Vertical scrollbar width */
+    height: 8px; /* Horizontal scrollbar height */
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(10, 25, 47, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) rgba(10, 25, 47, 0.1);
+}
+
+/* Optional: Scrollbar corner styling */
+::-webkit-scrollbar-corner {
+    background: rgba(10, 25, 47, 0.1);
+}
+
+/* For elements with overflow */
+.scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) rgba(10, 25, 47, 0.1);
+    overflow: auto;
+}
+
+/* Optional: Thin scrollbar for textareas */
+textarea::-webkit-scrollbar {
+    width: 4px;
+}

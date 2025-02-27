@@ -20,7 +20,7 @@
                 <li><a href="{% url 'home' %}#solution">Solution</a></li>
                 <li><a href="{% url 'home' %}#technology">Technology</a></li>
                 <li><a href="{% url 'about' %}" class="active">About</a></li>
-                <li><a href="{% url 'data_search' %}" class="cta-button">Data Portal</a></li>
+                <li><a href="{% url 'data_search' %}">Data Portal</a></li>
             </ul>
         </div>
     </nav>
@@ -98,9 +98,53 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    {% comment %} Footer Section {% endcomment %}
     <footer class="footer">
-        <!-- Same footer as home.html -->
+        <div class="container">
+            <div class="footer-content">
+                <!-- Brand Section -->
+                <div class="footer-brand">
+                    {% comment %} <img src="{% static 'images/logo-white.svg' %}" alt="SatIndustry Logo"> {% endcomment %}
+                    <span class="logo">SatIndustry</span>
+                    <p>Making Earth Observation Actionable</p>
+                </div>
+    
+                <!-- Quick Links -->
+                <div class="link-group">
+                    <h4>Solutions</h4>
+                    <a href="#solution">Emission Tracking</a>
+                    <a href="#technology">Technology</a>
+                    <a href="#about">About</a>
+                </div>
+    
+                <!-- Resources -->
+                <div class="link-group">
+                    <h4>Resources</h4>
+                    <a href="#">API Documentation</a>
+                    <a href="#">Case Studies</a>
+                    <a href="{% url 'data_search' %}">Data Portal</a>
+                </div>
+    
+                <!-- Newsletter -->
+                <div class="link-group">
+                    <h4>Stay Updated</h4>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+    
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <p>© 2025 SatIndustry. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
     </footer>
 
     <script src="{% static 'js/app.js' %}"></script>
