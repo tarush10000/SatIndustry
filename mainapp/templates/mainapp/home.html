@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'mainapp/images/logo.ico' %}" type="image/x-icon">
+    <title>SatIndustry - AI-Powered Emission Monitoring</title>
+    <link rel="stylesheet" href="{% static 'mainapp/css/index.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">
+                {% comment %} <img src="{% static 'mainapp/images/logo.png' %}" alt="SatIndustry Logo"> {% endcomment %}
+                <span>SatIndustry</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#solution">Solution</a></li>
+                <li><a href="#technology">Technology</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'data_search' %}">Data Portal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Next-Gen Industrial Emission Monitoring</h1>
+                <p class="hero-subtitle">Satellite-powered AI analytics for real-time pollution tracking and compliance enforcement</p>
+                <div class="hero-cta">
+                    <a href="{% url 'data_search' %}" class="cta-button primary">Explore Live Data</a>
+                    <a href="#solution" class="cta-button secondary">How It Works</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="earth-overlay"></div>
+                <img src="{% static 'mainapp/images/sample1.jpg' %}" alt="Satellite view" class="hero-image">
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section dark-bg">
+        <div class="container">
+            <h2 class="section-title">The Industrial Emission Challenge</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-industry"></i>
+                    <h3>24%</h3>
+                    <p>Of global CO2 emissions from industry</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-lungs"></i>
+                    <h3>4.2M</h3>
+                    <p>Premature deaths annually from air pollution</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-eye-slash"></i>
+                    <h3>65%</h3>
+                    <p>Of industrial zones lack proper monitoring</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution-section" id="solution">
+        <div class="container">
+            <h2 class="section-title">AI-Powered Emission Monitoring Solution</h2>
+            <div class="solution-grid">
+                <div class="solution-card">
+                    <div class="card-icon pulse">
+                        <i class="fas fa-satellite"></i>
+                    </div>
+                    <h3>Global Satellite Surveillance</h3>
+                    <p>Daily high-resolution monitoring of 10,000+ industrial facilities across 65 countries</p>
+                    <div class="solution-overlay">
+                        <ul class="solution-features">
+                            <li><i class="fas fa-check"></i> 5m resolution imaging</li>
+                            <li><i class="fas fa-check"></i> Thermal anomaly detection</li>
+                            <li><i class="fas fa-check"></i> Night vision capability</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="solution-card">
+                    <div class="card-icon pulse">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Predictive Emission Analytics</h3>
+                    <p>ML models with 94% accuracy predicting emission patterns and violations</p>
+                    <div class="solution-overlay">
+                        <ul class="solution-features">
+                            <li><i class="fas fa-check"></i> Anomaly detection</li>
+                            <li><i class="fas fa-check"></i> Trend forecasting</li>
+                            <li><i class="fas fa-check"></i> Risk assessment scoring</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="solution-card">
+                    <div class="card-icon pulse">
+                        <i class="fas fa-pollution"></i>
+                    </div>
+                    <h3>Comprehensive Pollution Tracking</h3>
+                    <p>Multi-spectral analysis of 15+ pollutants including CO₂, SO₂, and NOx</p>
+                    <div class="solution-overlay">
+                        <ul class="solution-features">
+                            <li><i class="fas fa-check"></i> Real-time concentration maps</li>
+                            <li><i class="fas fa-check"></i> Historical data comparison</li>
+                            <li><i class="fas fa-check"></i> Regulatory compliance checks</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Stack -->
+    <section class="tech-section dark-bg" id="technology">
+        <div class="container">
+            <h2 class="section-title">Cutting-Edge Technology Stack</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-visual">
+                        <img src="{% static 'images/satellite-tech.png' %}" alt="Satellite imaging" 
+                            class="tech-image scale-anim">
+                        <div class="tech-glow"></div>
+                    </div>
+                    <h3>Multi-Spectral Imaging</h3>
+                    <p>Advanced hyperspectral sensors detecting 40+ chemical signatures</p>
+                    <a href="#" class="tech-link">
+                        Explore Spectral Analysis <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-visual">
+                        <img src="{% static 'images/ai-chip.png' %}" alt="AI processing" 
+                            class="tech-image scale-anim">
+                        <div class="tech-glow"></div>
+                    </div>
+                    <h3>Deep Neural Networks</h3>
+                    <p>Petabyte-scale processing with custom environmental AI models</p>
+                    <a href="#" class="tech-link">
+                        View AI Models <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-visual">
+                        <img src="{% static 'images/cloud.png' %}" alt="Cloud analytics" 
+                            class="tech-image scale-anim">
+                        <div class="tech-glow"></div>
+                    </div>
+                    <h3>Real-Time Analytics</h3>
+                    <p>Global cloud infrastructure processing 2M+ data points/minute</p>
+                    <a href="#" class="tech-link">
+                        See Live Dashboard <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <div class="cta-text">
+                    <h2 class="cta-heading">Ready to Transform Emission Monitoring?</h2>
+                    <p class="cta-subheading">Join governments and organizations using our platform for real-time environmental oversight</p>
+                </div>
+                <div class="cta-buttons">
+                    <a href="{% url 'report_form' %}" class="cta-button primary">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Report Emission Incident
+                    </a>
+                    <a href="{% url 'data_search' %}" class="cta-button secondary">
+                        <i class="fas fa-database"></i>
+                        Access Public Data
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Brand Section -->
+                <div class="footer-brand">
+                    {% comment %} <img src="{% static 'images/logo-white.svg' %}" alt="SatIndustry Logo"> {% endcomment %}
+                    <span class="logo">SatIndustry</span>
+                    <p>Making Earth Observation Actionable</p>
+                </div>
+    
+                <!-- Quick Links -->
+                <div class="link-group">
+                    <h4>Solutions</h4>
+                    <a href="#solution">Emission Tracking</a>
+                    <a href="#technology">Technology</a>
+                    <a href="#about">About</a>
+                </div>
+    
+                <!-- Resources -->
+                <div class="link-group">
+                    <h4>Resources</h4>
+                    <a href="#">API Documentation</a>
+                    <a href="#">Case Studies</a>
+                    <a href="{% url 'data_search' %}">Data Portal</a>
+                </div>
+    
+                <!-- Newsletter -->
+                <div class="link-group">
+                    <h4>Stay Updated</h4>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+    
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <p>© 2023 SatIndustry. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Back to Top Button -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script src="{% static 'mainapp/js/index.js' %}"></script>
+</body>
+</html>

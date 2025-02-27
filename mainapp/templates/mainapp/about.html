@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About SatIndustry</title>
+    <link rel="stylesheet" href="{% static 'mainapp/css/index.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{% url 'home' %}" class="logo">
+                {% comment %} <img src="{% static 'images/logo.svg' %}" alt="SatIndustry Logo"> {% endcomment %}
+                <span>SatIndustry</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="{% url 'home' %}#solution">Solution</a></li>
+                <li><a href="{% url 'home' %}#technology">Technology</a></li>
+                <li><a href="{% url 'about' %}" class="active">About</a></li>
+                <li><a href="{% url 'data_search' %}" class="cta-button">Data Portal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- About Hero Section -->
+    <section class="about-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>About SatIndustry</h1>
+                <p>Pioneering AI-driven environmental monitoring for a sustainable future</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="mission-grid">
+                <div class="mission-content">
+                    <h2>Our Mission</h2>
+                    <p>To revolutionize industrial emission monitoring through cutting-edge satellite technology and AI analytics, enabling real-time environmental protection and sustainable industrial practices.</p>
+                    <div class="mission-stats">
+                        <div class="stat">
+                            <h3>10,000+</h3>
+                            <p>Facilities Monitored</p>
+                        </div>
+                        <div class="stat">
+                            <h3>94%</h3>
+                            <p>Detection Accuracy</p>
+                        </div>
+                        <div class="stat">
+                            <h3>24/7</h3>
+                            <p>Real-time Monitoring</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mission-image">
+                    <img src="{% static 'images/about-mission.jpg' %}" alt="Mission Image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <h2>Our Team</h2>
+            <div class="team-grid">
+                <div class="team-member">
+                    <img src="{% static 'images/team1.jpg' %}" alt="John Doe">
+                    <h3>John Doe</h3>
+                    <p>Chief Technology Officer</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <!-- Repeat for other team members -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="values-section dark-bg">
+        <div class="container">
+            <h2>Our Core Values</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Integrity</h3>
+                    <p>We maintain the highest standards of data accuracy and ethical practices</p>
+                </div>
+                <!-- Repeat for other values -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <!-- Same footer as home.html -->
+    </footer>
+
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

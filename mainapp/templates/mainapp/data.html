@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SatIndustry</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}" />  <-- Updated CSS link
+    <link rel="stylesheet" href="{% static 'mainapp/css/styles.css' %}" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-velocity"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -33,6 +33,28 @@
         <button id="search-button"><i class="fas fa-search"></i></button>
         <button id="location-button"><i class="fas fa-location-arrow"></i></button>
     </div>
+    <div id="planet-panel" style="display:none;">
+        <button id="closePlanetBtn" class="close-button">&times;</button>
+        <h2>Planet Imagery Analysis</h2>
+        <div id="planet-results">
+            <p>Planet analysis results will be displayed here after you search for a location and Planet data is processed.</p>
+            <div class="rgb-images">
+                <div class="image-container">
+                    <h4>Oldest Image (RGB)</h4>
+                    <img id="oldest-rgb-image" src="" alt="Oldest RGB Image">
+                    <p class="image-date" id="oldest-image-date"></p>
+                    <p class="image-metadata" id="oldest-image-id"></p>
+                </div>
+                <div class="image-container">
+                    <h4>Most Recent Image (RGB)</h4>
+                    <img id="recent-rgb-image" src="" alt="Most Recent RGB Image">
+                    <p class="image-date" id="recent-image-date"></p>
+                    <p class="image-metadata" id="recent-image-id"></p>
+                </div>
+            </div>
+            <div id="ndvi-summary"></div>
+        </div>
+    </div>
     <div id="info-panel">
         <button class="close-btn" id="closeBtn">&times;</button>
         <div class="panel-content">
@@ -49,7 +71,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{% static 'mainapp/script.js' %}"></script>  <-- Updated JS link
+    <script src="{% static 'mainapp/js/script.js' %}"></script>
 </body>
 
 </html>

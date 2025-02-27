@@ -1,0 +1,292 @@
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+button i {
+    font-size: 18px;
+    color: white;
+}
+
+/* FILTER DESIGN */
+/* General styles for the button container */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* General styles for the button container */
+.button-container {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 15px; /* Space between buttons */
+    position: fixed; /* Fix the container on the left side */
+    left: 20px; /* Distance from the left edge */
+    top: 75%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust for perfect centering */
+    z-index: 1000; /* Ensure the container is on top of the map */
+}
+
+/* Base styles for buttons */
+.modern-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #4caf50;
+    background: white;
+    border: 2px solid #4caf50;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 70px; /* Fixed width for consistent alignment */
+    text-align: left;
+}
+
+/* Styles for icons */
+.modern-button i {
+    font-size: 18px;
+    color: #4caf50;
+}
+
+.modern-button:hover {
+    background: #2d2a2a;
+    color: #4caf50;
+}
+
+/* Toggled state (green background and white text) */
+.modern-button.toggled {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modern-button.toggled i {
+    color: white;
+}
+
+.modern-button.toggled:hover {
+    background: #388e3c;
+}
+
+.modern-button:hover {
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+/* MAP DESIGN */
+#map {
+    flex: 1;
+}
+
+#search-container {
+    display: flex;
+    padding: 10px;
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #333;
+}
+
+#search-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #2e2e2e;
+    color: #fff;
+}
+
+#search-button,
+#location-button {
+    margin-left: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#search-button:hover,
+#location-button:hover {
+    background-color: #0056b3;
+}
+
+#planet-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background-color: #1e1e1e;
+    color: white;
+    border-radius: 8px;
+    padding: 15px;
+    width: 350px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    font-family: 'Arial', sans-serif;
+    max-height: calc(85vh); /* Max height to prevent overflow beyond the viewport */
+    overflow-y: auto; /* Enable vertical scroll inside the panel */
+}
+
+/* INFO PANEL */
+#info-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background-color: #1e1e1e;
+    color: white;
+    border-radius: 8px;
+    padding: 15px;
+    width: 350px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    font-family: 'Arial', sans-serif;
+    max-height: calc(85vh); /* Max height to prevent overflow beyond the viewport */
+    overflow-y: auto; /* Enable vertical scroll inside the panel */
+}
+
+/* Custom scrollbar for webkit browsers (Chrome, Safari, etc.) */
+#info-panel::-webkit-scrollbar {
+    width: 8px; /* Thinner scrollbar */
+}
+
+#info-panel::-webkit-scrollbar-track {
+    background-color: #333; /* Darker background for the scrollbar track */
+    border-radius: 10px; /* Rounded track */
+}
+
+#info-panel::-webkit-scrollbar-thumb {
+    background-color: #4caf50; /* Green color for the scrollbar thumb */
+    border-radius: 10px; /* Rounded thumb */
+    border: 2px solid #333; /* Adds a border around the thumb for better visibility */
+}
+
+#info-panel::-webkit-scrollbar-thumb:hover {
+    background-color: #388e3c; /* Darker green when hovering */
+}
+
+/* For Firefox */
+#info-panel {
+    scrollbar-width: thin; /* Thin scrollbar for Firefox */
+    scrollbar-color: #4caf50 #333; /* Green thumb and dark track */
+}
+
+#info-panel h1 {
+    font-size: 28px;
+    margin: 0;
+}
+
+#info-panel table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+#info-panel table th,
+#info-panel table td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+}
+
+#info-panel table th {
+    background-color: #333;
+    color: #ddd;
+}
+
+#info-panel table td.danger {
+    background-color: #ff4d4d;
+}
+
+#info-panel table td.warning {
+    background-color: #ffcc00;
+}
+
+#info-panel table td.safe {
+    background-color: #4caf50;
+    color: white;
+}
+
+.info-header {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-btn:hover {
+    background-color: #ff1a1a;
+}
+
+.panel-content {
+    margin-top: 10px;
+}
+
+
+canvas {
+    width: 100%;
+    height: 150px;
+}
+
+#spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.spinner {
+    border: 8px solid rgba(255, 255, 255, 0.3);
+    border-top: 8px solid #ffffff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

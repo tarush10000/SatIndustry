@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Emission - SatIndustry</title>
+    <link rel="stylesheet" href="{% static 'mainapp/css/index.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/logo.svg' %}" alt="SatIndustry Logo">
+                <span>SatIndustry</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="{% url 'home' %}#solution">Solution</a></li>
+                <li><a href="{% url 'home' %}#technology">Technology</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'data_search' %}" class="cta-button">Data Portal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Report Hero Section -->
+    <section class="report-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Report Industrial Emissions</h1>
+                <p>Help us monitor and reduce industrial pollution</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Report Form Section -->
+    <section class="report-form-section">
+        <div class="container">
+            <div class="form-container">
+                <h2>Submit Your Report</h2>
+                <form method="post" class="report-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" required placeholder="Enter coordinates or address">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pollutant">Pollutant Type</label>
+                        <select id="pollutant" name="pollutant" required>
+                            <option value="">Select pollutant</option>
+                            <option value="CO2">Carbon Dioxide (CO2)</option>
+                            <option value="SO2">Sulfur Dioxide (SO2)</option>
+                            <option value="NOx">Nitrogen Oxides (NOx)</option>
+                            <option value="PM">Particulate Matter (PM)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Observation Details</label>
+                        <textarea id="description" name="description" rows="5" required placeholder="Describe what you observed"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="evidence">Upload Evidence (Optional)</label>
+                        <input type="file" id="evidence" name="evidence" accept="image/*, video/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">Contact Information (Optional)</label>
+                        <input type="email" id="contact" name="contact" placeholder="Enter your email">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="cta-button primary">Submit Report</button>
+                        <button type="reset" class="cta-button secondary">Clear Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="report-guidelines">
+                <h3>Reporting Guidelines</h3>
+                <ul>
+                    <li>Provide accurate location information</li>
+                    <li>Describe the emission source clearly</li>
+                    <li>Include photos or videos if possible</li>
+                    <li>Provide contact information for follow-up</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <!-- Same footer as home.html -->
+    </footer>
+
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

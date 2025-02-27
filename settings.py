@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 OPENWEATHERAPI_KEY = os.getenv('SATINDUSTRY_OPENWEATHERAPIKEY')
-PLANETAPI_KEY = os.getenv('SATINDUSTRY_PLANET_API')
+PLANET_API_KEY = os.getenv('SATINDUSTRY_PLANET_API')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -87,6 +87,14 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.permissions.IsAuthenticated', # Comment this out temporarily for testing
+    ]
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -134,3 +142,27 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # For production
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',  # Minimum level to log (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+            'class': 'logging.FileHandler',
+            'filename': 'django_app.log',  # Path to your log file (relative to project root or absolute)
+        },
+    },
+    'loggers': {
+        'mainapp': {  # Replace 'mainapp' with the name of your Django app where you want to log
+            'handlers': ['file'],
+            'level': 'DEBUG', # Level for this logger (can be different from handler level)
+            'propagate': True, # Whether messages should propagate to root logger
+        },
+        'django': { # Configure Django's default logger if needed
+            'handlers': ['file'],
+            'level': 'ERROR', # Example: Only log Django ERRORs and above to file
+            'propagate': False, # Do not propagate to root logger to avoid duplication if root logger is configured
+        },
+    },
+}
