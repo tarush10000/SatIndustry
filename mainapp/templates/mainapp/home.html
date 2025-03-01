@@ -126,11 +126,11 @@
             <h2 class="section-title">Cutting-Edge Technology Stack</h2>
             <div class="tech-grid">
                 <div class="tech-item">
-                    <div class="tech-visual">
+                    {% comment %} <div class="tech-visual">
                         <img src="{% static 'images/satellite-tech.png' %}" alt="Satellite imaging" 
-                            class="tech-image scale-anim">
+                            class="tech-image">
                         <div class="tech-glow"></div>
-                    </div>
+                    </div> {% endcomment %}
                     <h3>Multi-Spectral Imaging</h3>
                     <p>Advanced hyperspectral sensors detecting 40+ chemical signatures</p>
                     <a href="#" class="tech-link">
@@ -138,11 +138,11 @@
                     </a>
                 </div>
                 <div class="tech-item">
-                    <div class="tech-visual">
+                    {% comment %} <div class="tech-visual">
                         <img src="{% static 'images/ai-chip.png' %}" alt="AI processing" 
-                            class="tech-image scale-anim">
+                            class="tech-image">
                         <div class="tech-glow"></div>
-                    </div>
+                    </div> {% endcomment %}
                     <h3>Deep Neural Networks</h3>
                     <p>Petabyte-scale processing with custom environmental AI models</p>
                     <a href="#" class="tech-link">
@@ -150,11 +150,11 @@
                     </a>
                 </div>
                 <div class="tech-item">
-                    <div class="tech-visual">
-                        <img src="{% static 'images/cloud.png' %}" alt="Cloud analytics" 
-                            class="tech-image scale-anim">
+                    {% comment %} <div class="tech-visual">
+                        <img src="{% static 'mainapp/images/sample1.jpg' %}" alt="Cloud analytics" 
+                            class="tech-image">
                         <div class="tech-glow"></div>
-                    </div>
+                    </div> {% endcomment %}
                     <h3>Real-Time Analytics</h3>
                     <p>Global cloud infrastructure processing 2M+ data points/minute</p>
                     <a href="#" class="tech-link">
@@ -205,13 +205,13 @@
                     <a href="#about">About</a>
                 </div>
     
-                <!-- Resources -->
+                {% comment %} <!-- Resources -->
                 <div class="link-group">
                     <h4>Resources</h4>
                     <a href="#">API Documentation</a>
                     <a href="#">Case Studies</a>
                     <a href="{% url 'data_search' %}">Data Portal</a>
-                </div>
+                </div> {% endcomment %}
     
                 <!-- Newsletter -->
                 <div class="link-group">
