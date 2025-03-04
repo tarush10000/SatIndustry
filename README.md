@@ -1,8 +1,9 @@
-# SatIndustry - Technical Answers to Real-World Problems (TARP) Project
+# SatIndustry - TARP Project
 
 **VIT Vellore | [Year: 2025]**
 
 ## Overview
+![image](https://github.com/user-attachments/assets/ba43917c-8b1f-4310-9074-ba563dab68c8)
 
 SatIndustry is a web application developed as a part of the Technical Answers to Real-World Problems (TARP) initiative at VIT Vellore. This project harnesses the power of satellite data and advanced AI techniques to provide insightful environmental monitoring and analysis.  SatIndustry aims to bridge the gap between complex satellite imagery and accessible, actionable information for a range of users, from environmental enthusiasts to industry professionals.
 
@@ -16,6 +17,7 @@ The primary goals of SatIndustry are:
 *   **Practical Application for Real-World Issues:** To address real-world environmental concerns by providing data-driven insights that can inform decision-making and promote environmental awareness.
 
 ## Key Features
+![image](https://github.com/user-attachments/assets/9558e8a0-5c78-4d7a-8b5e-e2427750b5d6)
 
 SatIndustry incorporates the following core features:
 
