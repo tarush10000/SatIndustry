@@ -120,17 +120,33 @@
         </div>
     </section>
 
+    {% comment %} Major Industries Section {% endcomment %}
+    <section class="polluting-industries-section">
+        <h2 class="section-title">Most Polluting Industries</h2>
+        <div class="industry-buttons">
+            <button class="industry-button" data-industry="Cement">Cement</button>
+            <button class="industry-button" data-industry="Power plant">Power plant</button>
+            <button class="industry-button" data-industry="Tannery">Tannery</button>
+            <button class="industry-button" data-industry="Steel">Steel</button>
+        </div>
+        <div id="industry-results">
+        </div>
+
+        <div class="manual-search">
+            <h3>Search a Location Manually</h3>
+            <div class="search-input-group">
+                <input type="text" id="manual-search-input" placeholder="Enter a location">
+                <button id="manual-search-button" class="search-button">Search</button>
+            </div>
+        </div>
+    </section>
+
     <!-- Technology Stack -->
     <section class="tech-section dark-bg" id="technology">
         <div class="container">
             <h2 class="section-title">Cutting-Edge Technology Stack</h2>
             <div class="tech-grid">
                 <div class="tech-item">
-                    {% comment %} <div class="tech-visual">
-                        <img src="{% static 'images/satellite-tech.png' %}" alt="Satellite imaging" 
-                            class="tech-image">
-                        <div class="tech-glow"></div>
-                    </div> {% endcomment %}
                     <h3>Multi-Spectral Imaging</h3>
                     <p>Advanced hyperspectral sensors detecting 40+ chemical signatures</p>
                     <a href="#" class="tech-link">
@@ -138,11 +154,6 @@
                     </a>
                 </div>
                 <div class="tech-item">
-                    {% comment %} <div class="tech-visual">
-                        <img src="{% static 'images/ai-chip.png' %}" alt="AI processing" 
-                            class="tech-image">
-                        <div class="tech-glow"></div>
-                    </div> {% endcomment %}
                     <h3>Deep Neural Networks</h3>
                     <p>Petabyte-scale processing with custom environmental AI models</p>
                     <a href="#" class="tech-link">
@@ -150,11 +161,6 @@
                     </a>
                 </div>
                 <div class="tech-item">
-                    {% comment %} <div class="tech-visual">
-                        <img src="{% static 'mainapp/images/sample1.jpg' %}" alt="Cloud analytics" 
-                            class="tech-image">
-                        <div class="tech-glow"></div>
-                    </div> {% endcomment %}
                     <h3>Real-Time Analytics</h3>
                     <p>Global cloud infrastructure processing 2M+ data points/minute</p>
                     <a href="#" class="tech-link">
@@ -204,14 +210,6 @@
                     <a href="#technology">Technology</a>
                     <a href="#about">About</a>
                 </div>
-    
-                {% comment %} <!-- Resources -->
-                <div class="link-group">
-                    <h4>Resources</h4>
-                    <a href="#">API Documentation</a>
-                    <a href="#">Case Studies</a>
-                    <a href="{% url 'data_search' %}">Data Portal</a>
-                </div> {% endcomment %}
     
                 <!-- Newsletter -->
                 <div class="link-group">

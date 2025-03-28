@@ -9,3 +9,8 @@ local_settings.py
 staticfiles/
 planet_images/
 django_app.log
+mainapp/models/trained_cement_model.pkl
+mainapp/models/trained_powerplant_model.pkl
+mainapp/models/trained_steel_model.pkl
+mainapp/models/trained_tannery_model.pkl
+mainapp/kalman_lstm.py

@@ -1,16 +1,13 @@
-from datetime import datetime, date
+from datetime import datetime, date, time
 import os
 import random
-import re
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
 import requests
 import logging
 import requests
-import rasterio
 import numpy as np
-import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +64,7 @@ def get_air_pollution_data(request):
 
     try:
         response = requests.get(air_pollution_url)
+        print(response)
         response.raise_for_status() # Raise HTTPError for bad responses
         air_pollution_data = response.json()
         return JsonResponse(air_pollution_data)
@@ -159,296 +157,6 @@ def get_wind_layer_url(request):
     tile_url = f'https://tile.openweathermap.org/map/wind/{{z}}/{{x}}/{{y}}.png?appid={api_key}' # Using f-string for URL
     return JsonResponse({'tileUrl': tile_url})
 
-def get_planet_imagery_analysis(request):
-    """
-    Performs Planet imagery analysis (NDVI, change detection) for a given location using direct API requests.
-    """
-    lat = request.GET.get('lat')
-    lon = request.GET.get('lon')
-
-    if not lat or not lon:
-        return JsonResponse({'error': 'Latitude and longitude are required parameters.'}, status=400)
-
-    planet_api_key = settings.PLANET_API_KEY
-    if not planet_api_key:
-        logger.error("PLANET_API_KEY is not set in Django settings.")
-        return JsonResponse({'error': 'Planet API key not configured on server.'}, status=500)
-
-    try:
-        # --- Functions from your script adapted for Django view ---
-        def authenticate():
-            return {"Authorization": f"api-key {planet_api_key}"}
-
-        def fetch_scene_data(point_geom, start_date, end_date, sun_elevation_range):
-            url = "https://api.planet.com/data/v1/quick-search"
-            headers = authenticate()
-            payload = {
-                "item_types": ["PSScene"],
-                "filter": {
-                    "type": "AndFilter",
-                    "config": [
-                        {
-                            "type": "DateRangeFilter",
-                            "field_name": "acquired",
-                            "config": {
-                                "gte": start_date,
-                                "lte": end_date
-                            }
-                        },
-                        {
-                            "type": "RangeFilter",
-                            "field_name": "cloud_cover",
-                            "config": {
-                                "lte": 0.05  # Less than or equal to 5% cloud cover - Adjusted to 5%
-                            }
-                        },
-                        {
-                            "type": "RangeFilter",
-                            "field_name": "sun_elevation",
-                            "config": {
-                                "gte": sun_elevation_range[0],
-                                "lte": sun_elevation_range[1]
-                            }
-                        },
-                        {
-                            "type": "GeometryFilter",
-                            "field_name": "geometry",
-                            "config": point_geom # Use point_geom directly
-                        },
-                        {
-                            "type": "RangeFilter",
-                            "field_name": "gsd", # Ground Sample Distance
-                            "config": {
-                                "lte": 5   # Resolution less than 5 meters/pixel
-                            }
-                        }
-                    ]
-                },
-            }
-            response = requests.post(url, headers=headers, json=payload)
-
-            if response.status_code == 200:
-                search_results = response.json()
-                # Extract relevant info and return as list of dictionaries
-                features_data = []
-                if search_results and search_results.get("features"):
-                    for feature in search_results["features"]:
-                        features_data.append({
-                            "item_id": feature["id"],
-                            "acquired_date": feature.get("properties", {}).get("acquired", "Unknown Date"),
-                            "asset_url": f"https://api.planet.com/data/v1/item-types/PSScene/items/{feature['id']}/assets/" # Construct asset URL directly
-                        })
-                return features_data # Return list of dictionaries
-            else:
-                logger.error(f"Error fetching scene data: {response.status_code}")
-                logger.error(f"Error details: {response.text}")
-                return None
-
-        def activate_asset(item_id, asset_type):
-            url = f"https://api.planet.com/data/v1/item-types/PSScene/items/{item_id}/assets/"
-            headers = authenticate()
-            response = requests.get(url, headers=headers)
-
-            if response.status_code != 200:
-                logger.error(f"Error fetching assets: {response.status_code}")
-                logger.error(f"Details: {response.text}")
-                return None
-
-            assets = response.json()
-            if asset_type not in assets:
-                logger.error(f"Asset type {asset_type} not found.")
-                return None
-
-            # Activate the asset
-            activation_url = assets[asset_type]["_links"]["activate"]
-            requests.post(activation_url, headers=headers)
-
-            # Wait for activation to complete (with logging)
-            while True:
-                response = requests.get(url, headers=headers)
-                assets = response.json()
-                if assets[asset_type]["status"] == "active":
-                    return assets[asset_type].get("location")
-                elif assets[asset_type]["status"] == "inactive":
-                    logger.error("Activation failed.")
-                    return None
-                else:
-                    r = random.randint(1, 10000)
-                    if r > 9900:
-                        logger.info("Waiting for activation...") # Using logger for info
-
-        def download_image(asset_url, destination_folder="planet_images"): # Destination folder added
-            print(f"Downloading image from {asset_url}...") # Using print for debugging
-            os.makedirs(destination_folder, exist_ok=True) # Ensure folder exists
-            match = re.search(r'item_id=([^&]+)', asset_url)
-            if match:
-                filename = f"{match.group(1)}_basic_analytic_8b.tif"
-            else:
-                filename = f"planet_image_{datetime.now().strftime('%Y%m%d_%H%M%S')}.tif" # More robust filename
-            file_path = os.path.join(destination_folder, filename)
-            if not os.path.exists(file_path):
-                logger.info(f"Downloading {filename}...") # Using logger for info
-                # Use streaming to handle large files
-                response = requests.get(asset_url, stream=True)
-                if response.status_code == 200:
-                    with open(file_path, 'wb') as f:
-                        for chunk in response.iter_content(chunk_size=8192):
-                            f.write(chunk)
-                    logger.info(f"Downloaded {filename}") # Using logger for info
-                else:
-                    logger.error(f"Failed to download. Status code: {response.status_code}") # Using logger for error
-                    return None
-            return file_path
-
-        def calculate_ndvi(file_path):
-            try:
-                with rasterio.open(file_path) as src:
-                    if src.count >= 4:
-                        red = src.read(3).astype(np.float32)
-                        nir = src.read(4).astype(np.float32)
-
-                        ndvi = (nir - red) / (nir + red + 1e-8) # Added small epsilon to prevent divide by zero
-                        ndvi_normalized = (ndvi - np.min(ndvi)) / (np.max(ndvi) - np.min(ndvi) + 1e-8) # Normalize NDVI
-                        return ndvi_normalized
-                    else:
-                        logger.warning("Insufficient bands for NDVI calculation in {}".format(file_path)) # Using logger for warning
-                        return None
-            except rasterio.RasterioIOError as e: # Catch rasterio specific errors
-                logger.error(f"Rasterio error while processing {file_path}: {e}")
-                return None
-
-        def convert_tif_to_jpg(file_path, output_path):
-            with rasterio.open(file_path) as src:
-                if src.count >= 3:
-                    red = src.read(3)
-                    green = src.read(2)
-                    blue = src.read(1)
-                    
-                    red_normalized = (red - red.min()) / (red.max() - red.min())
-                    green_normalized = (green - green.min()) / (green.max() - green.min())
-                    blue_normalized = (blue - blue.min()) / (blue.max() - blue.min())
-                    
-                    rgb_image = np.dstack((red_normalized, green_normalized, blue_normalized))
-                    
-                    plt.imsave(output_path, rgb_image)
-                    print(f"Converted {file_path} to {output_path}")
-                    return output_path # Return the output path
-                else:
-                    print(f"Insufficient bands for true color image in {file_path}")
-                    return None
-
-        # 1. Define Point Geometry for search
-        point_geom = {
-            "type": "Point",
-            "coordinates": [float(lon), float(lat)]
-        }
-
-        # 2. Define Date Ranges and Sun Elevation
-        sun_elevation_range = [30, 50] # Example sun elevation range
-        oldest_start_date = "2018-01-01T00:00:00Z" # Adjusted start date
-        pre_2023_end_date = "2022-12-31T23:59:59Z"
-        post_2023_start_date = "2024-01-01T00:00:00Z" # Adjusted start date
-        most_recent_end_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ') # Current time as end date
-
-
-        # 3. Fetch Scene Data for two time periods
-        data_before_2023 = fetch_scene_data(point_geom, oldest_start_date, pre_2023_end_date, sun_elevation_range)
-        data_after_2023 = fetch_scene_data(point_geom, post_2023_start_date, most_recent_end_date, sun_elevation_range)
-
-
-        downloaded_files = []
-        rgb_image_paths = {} # Dictionary to store RGB image paths
-
-        # 4. Process Images Before 2023
-        if data_before_2023:
-            for feature in data_before_2023["features"]:
-                item_id = feature["id"]
-                acquired_date = feature.get("properties", {}).get("acquired", "Unknown Date")
-
-                logger.info(f"Processing item before 2023: {item_id}, Acquired: {acquired_date}") # Using logger
-
-                asset_url = activate_asset(item_id, "basic_analytic_4b") # Using basic_analytic_4b as in script
-                if asset_url:
-                    logger.info(f"Asset URL (before 2023): {asset_url}") # Using logger
-                    downloaded_file = download_image(asset_url)
-                    if downloaded_file:
-                        downloaded_files.append(downloaded_file)
-
-                        # Convert to RGB and store path
-                        oldest_jpg_path = downloaded_file.replace(".tif", "_rgb.jpg")
-                        rgb_image_paths['oldest'] = convert_tif_to_jpg(downloaded_file, oldest_jpg_path) # Store path
-
-
-        # 5. Process Images After 2023
-        if data_after_2023 and data_after_2023.get("features"):
-            for feature in data_after_2023["features"]:
-                item_id = feature["id"]
-                acquired_date = feature.get("properties", {}).get("acquired", "Unknown Date")
-
-                logger.info(f"Processing item after 2023: {item_id}, Acquired: {acquired_date}") # Using logger
-
-                asset_url = activate_asset(item_id, "basic_analytic_4b") # Using basic_analytic_4b as in script
-                if asset_url:
-                    logger.info(f"Asset URL (after 2023): {asset_url}") # Using logger
-                    downloaded_file = download_image(asset_url)
-                    if downloaded_file:
-                        downloaded_files.append(downloaded_file)
-                        # Convert to RGB and store path
-                        most_recent_jpg_path = downloaded_file.replace(".tif", "_rgb.jpg")
-                        rgb_image_paths['most_recent'] = convert_tif_to_jpg(downloaded_file, most_recent_jpg_path) # Store path
-
-
-        # 6. NDVI Calculation and Change Detection if we have two downloaded files
-        ndvi_change_summary = {} # Initialize even if no NDVI is calculated
-
-        if len(downloaded_files) == 2:
-            try:
-                oldest_file_path = downloaded_files[0]
-                most_recent_file_path = downloaded_files[1]
-
-                oldest_ndvi = calculate_ndvi(oldest_file_path)
-                most_recent_ndvi = calculate_ndvi(most_recent_file_path)
-
-                if oldest_ndvi is not None and most_recent_ndvi is not None: # Proceed only if both NDVI are calculated
-                    ndvi_change = most_recent_ndvi - oldest_ndvi
-
-                    ndvi_change_summary = {
-                        'min_change': float(np.min(ndvi_change)),
-                        'max_change': float(np.max(ndvi_change)),
-                        'average_change': float(np.mean(ndvi_change)),
-                    }
-                else:
-                    return JsonResponse({'error': 'Could not calculate NDVI for both images.'}, status=500) # More specific error
-
-            except Exception as ndvi_e: # Catch NDVI calculation errors
-                logger.error(f"Error during NDVI calculation: {ndvi_e}")
-                return JsonResponse({'error': 'Error during NDVI calculation.'}, status=500)
-
-
-        elif downloaded_files: # If only one or zero files are downloaded, report accordingly
-            return JsonResponse({'error': 'Insufficient PlanetScope imagery found for change detection (Need 2 images).'}, status=404)
-        else:
-            return JsonResponse({'error': 'No PlanetScope imagery found for this location.'}, status=404)
-
-
-        # 7. Prepare JSON Response - Include RGB image paths
-        response_data = {
-            'ndvi_change_summary': ndvi_change_summary,
-            'status': 'Analysis successful',
-            'oldest_rgb_image_url': rgb_image_paths.get('oldest'), # Include RGB image paths in response
-            'most_recent_rgb_image_url': rgb_image_paths.get('most_recent'),
-        }
-        return JsonResponse(response_data)
-
-
-    except requests.exceptions.RequestException as req_err:
-        logger.error(f"Request exception during Planet API interaction: {req_err}")
-        return JsonResponse({'error': 'Error communicating with Planet API'}, status=503)
-    except Exception as e:
-        logger.exception("Unexpected error during Planet imagery analysis:")
-        return JsonResponse({'error': 'Internal server error during Planet analysis'}, status=500)
-
-
 def home(request): # Make sure your home view is still here
     return render(request, 'mainapp/home.html')
 
@@ -463,3 +171,283 @@ def report_form(request):
 
 def data_search(request):
     return render(request, 'mainapp/data.html')
+
+# Pollution Industry Data
+import json
+import random
+from django.http import JsonResponse
+from django.urls import reverse
+
+def get_polluting_industries(request):
+    industry_type = request.GET.get('industry', None)
+    if industry_type:
+        industries_data = {
+            "Cement": [
+                {"name": "Lafarge Holcim", "location": "Zurich, Switzerland"},
+                {"name": "Anhui Conch Cement", "location": "Wuhu, China"},
+                {"name": "China National Building Material", "location": "Beijing, China"},
+                {"name": "HeidelbergCement", "location": "Heidelberg, Germany"},
+                {"name": "Cemex", "location": "Monterrey, Mexico"},
+                {"name": "Shree Cement", "location": "Beawar, India"},
+                {"name": "UltraTech Cement", "location": "Mumbai, India"},
+            ],
+            "Power plant": [
+                {"name": "Taichung Power Plant", "location": "Taichung, Taiwan"},
+                {"name": "Drax Power Station", "location": "Selby, UK"},
+                {"name": "Belchatow Power Station", "location": "Bełchatów, Poland"},
+                {"name": "Ratcliffe-on-Soar Power Station", "location": "Nottinghamshire, UK"},
+                {"name": "Kozienice Power Station", "location": "Kozienice, Poland"},
+                {"name": "Rihand Super Thermal Power Station", "location": "Sonbhadra, India"},
+                {"name": "Mundra Thermal Power Station", "location": "Mundra, India"},
+            ],
+            "Tannery": [
+                {"name": "Hazaribagh Tanneries (formerly)", "location": "Dhaka, Bangladesh"},
+                {"name": "Kanpur Leather Cluster", "location": "Kanpur, India"},
+                {"name": "Fez Leather Souk", "location": "Fez, Morocco"},
+                {"name": "Sava Leather Tannery Zone", "location": "Addis Ababa, Ethiopia"},
+                {"name": "Rinos Leather", "location": "Leon, Mexico"},
+                {"name": "Basukinath Tanners", "location": "Basukinath, India"},
+                {"name": "Ambur Leather Cluster", "location": "Ambur, India"},
+            ],
+            "Steel": [
+                {"name": "ArcelorMittal", "location": "Luxembourg City, Luxembourg"},
+                {"name": "China Baowu Steel Group", "location": "Shanghai, China"},
+                {"name": "Nippon Steel Corporation", "location": "Tokyo, Japan"},
+                {"name": "POSCO", "location": "Pohang, South Korea"},
+                {"name": "JSW Steel", "location": "Mumbai, India"},
+                {"name": "Tata Steel", "location": "Mumbai, India"},
+                {"name": "Steel Authority of India Limited (SAIL)", "location": "New Delhi, India"},
+            ],
+        }
+
+        if industry_type in industries_data:
+            industries = industries_data[industry_type]
+            if len(industries) > 4:
+                sampled_industries = random.sample(industries, 4)
+            else:
+                sampled_industries = industries
+
+            results = []
+            for industry in sampled_industries:
+                data_page_url = reverse('data_search') + f'?location={industry["location"]}'
+                results.append({"name": industry["name"], "location": industry["location"], "url": data_page_url})
+
+            return JsonResponse({"industries": results})
+        else:
+            return JsonResponse({"error": "Invalid industry type"}, status=400)
+    else:
+        return JsonResponse({"error": "Industry type not provided"}, status=400)
+    
+import os
+import requests
+from django.http import JsonResponse
+from django.conf import settings
+from requests.structures import CaseInsensitiveDict
+
+# Models Code Ishnanvi
+import joblib
+import pandas as pd
+from datetime import datetime, timedelta
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+# Configuration for the model
+SEQ_LENGTH = 72
+N_FEATURES = 11
+N_TARGETS = 5
+FEATURES = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
+TARGETS = ["so2", "no2", "co", "pm2_5", "pm10"]
+
+# Function to load the appropriate model based on industry
+def load_industry_model(industry):
+    if 'cement' in industry.lower():
+        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model.pkl')
+    elif 'power plant' in industry.lower():
+        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_powerplant_model.pkl')
+    elif 'tannery' in industry.lower():
+        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_tannery_model.pkl')
+    elif 'steel' in industry.lower():
+        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_steel_model.pkl')
+    else:
+        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model.pkl')
+    try:
+        print("Loading model from:", model_path)
+        model = joblib.load(model_path)
+        return model
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        print(f"Error loading model for {industry}: {e}")
+        return None
+
+def fetch_historical_weather(lat, lon, days=10, api_key=None):
+    API_KEY = settings.OPENWEATHERAPI_KEY
+    yesterday = datetime.now().date() - timedelta(days=1)
+    end_date = datetime.combine(yesterday, datetime.min.time())
+    start_date = end_date - timedelta(days=days - 1)
+    all_data = []
+    for i in range(days):
+        current_date = end_date - timedelta(days=i)
+        timestamp = int(current_date.timestamp())
+        response = requests.get(
+            "https://history.openweathermap.org/data/2.5/history/city",
+            params={
+                "lat": lat,
+                "lon": lon,
+                "type": "hour",
+                "start": timestamp,
+                "cnt": 24,
+                "appid": API_KEY,
+                "units": "metric"
+            }
+        )
+        if response.status_code == 200:
+            data = response.json()
+            for record in data.get("list", []):
+                all_data.append({
+                    "timestamp": pd.to_datetime(record["dt"], unit='s', utc=True),
+                    "temperature": record["main"]["temp"],
+                    "humidity": record["main"]["humidity"],
+                    "wind_speed": record["wind"]["speed"],
+                    "pressure": record["main"]["pressure"]
+                })
+        else:
+            print(f"Error fetching weather data: {response.text}")
+        # time.sleep(1) # Consider removing or adjusting sleep for production
+    return pd.DataFrame(all_data)
+
+# Function to fetch historical air pollution data (modified to be reusable)
+def fetch_historical_air_pollution(lat, lon, days=10, api_key=None):
+    API_KEY = settings.OPENWEATHERAPI_KEY
+    yesterday = datetime.now().date() - timedelta(days=1)
+    end_date = datetime.combine(yesterday, datetime.min.time())
+    start_date = end_date - timedelta(days=days - 1)
+    all_data = []
+    for i in range(days):
+        current_date = end_date - timedelta(days=i)
+        timestamp = int(current_date.timestamp())
+        response = requests.get(
+            "http://api.openweathermap.org/data/2.5/air_pollution/history",
+            params={
+                "lat": lat,
+                "lon": lon,
+                "start": timestamp,
+                "end": timestamp + 86400,
+                "appid": API_KEY
+            }
+        )
+        if response.status_code == 200:
+            data = response.json()
+            for record in data.get("list", []):
+                all_data.append({
+                    "timestamp": datetime.utcfromtimestamp(record["dt"]),
+                    "co": record["components"]["co"],
+                    "no2": record["components"]["no2"],
+                    "so2": record["components"]["so2"],
+                    "o3": record["components"]["o3"],
+                    "pm2_5": record["components"]["pm2_5"],
+                    "pm10": record["components"]["pm10"],
+                    "nh3": record["components"]["nh3"]
+                })
+        else:
+            print(f"Error fetching air pollution data: {response.text}")
+        # time.sleep(1)
+    return pd.DataFrame(all_data)
+
+def preprocess_data(weather_df, air_pollution_df):
+    final_df = pd.merge(weather_df, air_pollution_df, on="timestamp", how="inner")
+    final_df['timestamp'] = pd.to_datetime(final_df['timestamp'])
+    final_df = final_df.set_index('timestamp').sort_index()
+    final_df = final_df[~final_df.index.duplicated(keep='first')]
+    final_df = final_df.resample('H').first()
+    for col in final_df.columns:
+        final_df[col] = final_df[col].fillna(method='ffill', limit=2)
+        final_df[col] = final_df[col].interpolate(method='time', limit_direction='both')
+    def clip_outliers(series):
+        q1 = series.quantile(0.25)
+        q3 = series.quantile(0.75)
+        iqr = q3 - q1
+        return series.clip(lower=q1 - 1.5 * iqr, upper=q3 + 1.5 * iqr)
+    pollution_cols = ['co', 'no2', 'so2', 'o3', 'pm2_5', 'pm10', 'nh3']
+    final_df[pollution_cols] = final_df[pollution_cols].apply(clip_outliers)
+    final_df['humidity'] = final_df['humidity'].clip(0, 100)
+    final_df['pressure'] = final_df['pressure'].clip(800, 1200)
+    final_df['wind_speed'] = final_df['wind_speed'].clip(0, 100)
+
+    scaler = MinMaxScaler()
+    final_df[FEATURES] = scaler.fit_transform(final_df[FEATURES])
+    scaler_no2 = StandardScaler()
+    final_df["no2"] = scaler_no2.fit_transform(final_df[["no2"]])
+    return final_df
+
+def create_sequences(data: pd.DataFrame, seq_length: int):
+    if len(data) < seq_length:
+        print(f"Error: Data length ({len(data)}) is not greater than sequence length ({seq_length}).")
+        return np.array([])
+    sequences = []
+    for i in range(len(data) - seq_length):
+        seq = data.iloc[i:i + seq_length]
+        sequences.append(seq.values)
+    return np.array(sequences)
+
+def get_coordinates_here(request):
+    location_name = request.GET.get('q')
+    industry = request.GET.get('industry')
+    print(f"Searching for location: {location_name}, Industry: {industry}")
+    if location_name and industry:
+        api_key = settings.GEOAPIFY_API_KEY
+        base_url = 'https://api.geoapify.com/v1/geocode/search'
+        params = {
+            'text': industry + ',' + location_name,
+            'apiKey': api_key
+        }
+        headers = CaseInsensitiveDict()
+        headers["Accept"] = "application/json"
+
+        try:
+            response = requests.get(base_url, params=params, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            if data.get('features'):
+                feature = data['features'][0]
+                longitude = feature['geometry']['coordinates'][0]
+                latitude = feature['geometry']['coordinates'][1]
+                display_name = feature['properties']['formatted']
+
+                # Load the appropriate model
+                model = load_industry_model(industry)
+                print(model)
+                print(f"Model loaded for industry: {industry}")
+                if model:
+                    # Fetch historical data for the location
+                    openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
+                    weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
+                    print(weather_df)
+                    air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
+                    print(air_pollution_df)
+                    if not weather_df.empty and not air_pollution_df.empty:
+                        print("Data fetched successfully.")
+                        final_df = preprocess_data(weather_df, air_pollution_df)
+                        X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
+                        print(f"Data shape: {X_new.shape}")
+                        if X_new.size > 0:
+                            predictions = model.predict(X_new)
+                            # Assuming you want to return the last prediction for the next hour
+                            last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
+                            print(f"Predictions: {last_prediction}")
+                            return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'predictions': last_prediction, 'targets': TARGETS})
+                        else:
+                            return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': 'Not enough data to make a prediction.'})
+                    else:
+                        return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': 'Could not fetch historical data.'})
+
+                else:
+                    return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': f'Model not found for industry: {industry}'})
+
+            else:
+                return JsonResponse({'error': f'Location "{location_name}" not found'}, status=404)
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({'error': f'Error fetching data from Geoapify API: {e}'}, status=500)
+        except Exception as e:
+            return JsonResponse({'error': f'Error processing request: {e}'}, status=500)
+    else:
+        return JsonResponse({'error': 'Missing location or industry query parameter'}, status=400)

@@ -14,3 +14,88 @@ backToTopButton.addEventListener('click', () => {
         behavior: 'smooth'
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const industryButtons = document.querySelectorAll('.industry-button');
+    const industryResultsDiv = document.getElementById('industry-results');
+
+    industryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Button clicked:', this.getAttribute('data-industry'));
+            const industryType = this.getAttribute('data-industry');
+            fetch(`/get_polluting_industries/?industry=${industryType}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.industries) {
+                        // Create the table
+                        const table = document.createElement('table');
+                        table.id = 'industry-results-table';
+                        const thead = document.createElement('thead');
+                        const headerRow = document.createElement('tr');
+                        const nameHeader = document.createElement('th');
+                        nameHeader.textContent = 'Industry Name';
+                        const locationHeader = document.createElement('th');
+                        locationHeader.textContent = 'Location';
+                        headerRow.appendChild(nameHeader);
+                        headerRow.appendChild(locationHeader);
+                        thead.appendChild(headerRow);
+                        table.appendChild(thead);
+
+                        const tbody = document.createElement('tbody');
+                        data.industries.forEach(industry => {
+                            const row = document.createElement('tr');
+                            row.dataset.url = industry.url; // Store the URL in a data attribute
+
+                            const nameCell = document.createElement('td');
+                            nameCell.textContent = industry.name;
+                            row.appendChild(nameCell);
+
+                            const locationCell = document.createElement('td');
+                            locationCell.textContent = industry.location;
+                            row.appendChild(locationCell);
+
+                            tbody.appendChild(row);
+                        });
+                        table.appendChild(tbody);
+
+                        // Add the table to the results div
+                        industryResultsDiv.innerHTML = ''; // Clear previous results
+                        industryResultsDiv.appendChild(table);
+
+                        // Add event listener for row clicks to redirect to data page
+                        tbody.addEventListener('click', function(event) {
+                            const clickedRow = event.target.closest('tr');
+                            if (clickedRow && clickedRow.dataset.url) {
+                                const industryName = clickedRow.querySelector('td:first-child').textContent;
+                                window.location.href = `${clickedRow.dataset.url}&industry=${encodeURIComponent(industryName)}`;
+                            }
+                        });
+
+                    } else if (data.error) {
+                        industryResultsDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    industryResultsDiv.innerHTML = '<p class="error-message">Failed to fetch industry data.</p>';
+                });
+        });
+    });
+
+    const manualSearchButton = document.getElementById('manual-search-button');
+    const manualSearchInput = document.getElementById('manual-search-input');
+
+    if (manualSearchButton) {
+        manualSearchButton.addEventListener('click', function() {
+            const location = manualSearchInput.value;
+            if (location) {
+                const dataSearchUrl = "{% url 'data_search' %}";
+                window.location.href = `/data?location=${encodeURIComponent(location)}`;
+                console.log('Searching for:', location);
+                console.log('Redirecting to:', `${dataSearchUrl}?location=${encodeURIComponent(location)}`);
+            } else {
+                alert('Please enter a location to search.');
+            }
+        });
+    }
+});

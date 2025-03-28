@@ -11,5 +11,6 @@ urlpatterns = [
     path('historical-air-quality-data/', views.get_historical_air_quality_data, name='historical_air_quality_data'),
     path('cloud-layer-url/', views.get_cloud_layer_url, name='cloud_layer_url'),
     path('wind-layer-url/', views.get_wind_layer_url, name='wind_layer_url'),
-    path('planet-analysis/', views.get_planet_imagery_analysis, name='planet_analysis'),
+    path('get_polluting_industries/', views.get_polluting_industries, name='get_polluting_industries'),
+    path('get_here_coordinates/', views.get_coordinates_here, name='get_here_coordinates'),
 ]

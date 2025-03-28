@@ -1118,3 +1118,131 @@ section {
 textarea::-webkit-scrollbar {
     width: 4px;
 }
+
+/* Most Polluting Industries Section */
+.polluting-industries-section {
+    padding: 6rem 0; /* Similar padding to solution section */
+    background-color: #f9fbfd; /* Light background like solution section */
+    text-align: center;
+}
+
+.polluting-industries-section .section-title {
+    color: var(--primary-color); /* Use primary color for title */
+    margin-bottom: 2rem;
+}
+
+.industry-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 3rem; /* Increased margin for spacing */
+}
+
+.industry-button {
+    padding: 12px 24px; /* Slightly larger padding */
+    border: none;
+    background-color: var(--secondary-color); /* Use secondary color for buttons */
+    color: white;
+    cursor: pointer;
+    border-radius: 8px; /* More rounded buttons */
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+.industry-button:hover {
+    background-color: #52d3b8; /* Lighter shade on hover */
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+#industry-results {
+    width: 90%; /* Adjust width as needed */
+    max-width: 1200px; /* Limit maximum width */
+    margin: 2rem auto;
+    overflow-x: auto; /* For potential horizontal scrolling on smaller screens */
+}
+
+#industry-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* Table shadow */
+    border-radius: 8px; /* Rounded table corners */
+    overflow: hidden; /* To contain the border-radius */
+    background-color: white; /* White table background */
+}
+
+#industry-results-table th,
+#industry-results-table td {
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+#industry-results-table th {
+    background-color: #f5f5f5; /* Light gray header background */
+    font-weight: 500;
+    color: var(--dark-text);
+}
+
+#industry-results-table tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+#industry-results-table tbody tr:hover {
+    background-color: #f0f8ff; /* Light blue on row hover */
+}
+
+#industry-results-table tbody tr:active {
+    background-color: #e0f7fa; /* Slightly darker blue on click/active */
+}
+
+.error-message {
+    color: red;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+/* Manual Search Section */
+.manual-search {
+    text-align: center;
+    margin-top: 4rem;
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.manual-search h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.search-input-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.search-input-group input[type="text"] {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    flex-grow: 1;
+}
+
+.search-input-group button.search-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: var(--primary-color); /* Or a different color */
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-input-group button.search-button:hover {
+    background-color: #0d2a4a; /* Darker shade on hover */
+}

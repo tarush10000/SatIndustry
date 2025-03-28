@@ -262,7 +262,6 @@ function createChart(data) {
 
 // Handle Search Button
 document.getElementById('search-button').addEventListener('click', () => {
-    console.log("Search button clicked!"); // ADDED console.log
     const location = document.getElementById('search-input').value;
     if (location) {
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`)
@@ -284,6 +283,111 @@ document.getElementById('search-button').addEventListener('click', () => {
         alert('Please enter a location.');
     }
 });
+
+const searchLocation = (locationName, industry, successCallback, failureCallback) => {
+    let url = `/get_here_coordinates/?q=${encodeURIComponent(locationName)}`;
+    if (industry) {
+        url += `&industry=${encodeURIComponent(industry)}`;
+    }
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || 'Geocoding API error');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.latitude && data.longitude) {
+                successCallback(data.latitude, data.longitude, data.displayName, data.predictions, data.targets); // Pass predictions and targets
+            } else {
+                failureCallback(data.error || `Location "${locationName}" not found.`);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching location:', error);
+            failureCallback(`Failed to fetch location for "${locationName}".`);
+        });
+};
+
+function searchFromIndustryClick(location, industry) {
+    searchLocation(
+        location,
+        industry,
+        (lat, lon, display_name, predictions, targets) => {
+            addMarker(lat, lon, display_name);
+            fetchData(lat, lon);
+            document.getElementById('search-input').value = display_name;
+            // You can now use 'predictions' and 'targets' here to update your UI
+            console.log("Predictions:", predictions);
+            console.log("Targets:", targets);
+        },
+        (errorMessage) => {
+            alert(`${errorMessage} for industry "${industry}" near "${location}".`);
+        }
+    );
+}
+
+// Event listener for industry buttons
+const industryButtonsContainer = document.querySelector('.industry-buttons');
+if (industryButtonsContainer) {
+    industryButtonsContainer.addEventListener('click', (event) => {
+        if (event.target.classList.contains('industry-button')) {
+            const industry = event.target.dataset.industry;
+            const currentLocation = 'Vellore, Tamil Nadu, India'; // Use the current location
+            searchFromIndustryClick(currentLocation, industry);
+        }
+    });
+}
+
+// Event listener for manual search
+const manualSearchButton = document.getElementById('manual-search-button');
+if (manualSearchButton) {
+    manualSearchButton.addEventListener('click', () => {
+        const location = document.getElementById('manual-search-input').value;
+        if (location) {
+            searchLocation(
+                location,
+                null, // No specific industry for manual search (can be modified if needed)
+                (lat, lon, display_name) => {
+                    addMarker(lat, lon, display_name);
+                    fetchData(lat, lon);
+                    document.getElementById('search-input').value = display_name;
+                },
+                (errorMessage) => {
+                    alert(errorMessage);
+                }
+            );
+        } else {
+            alert('Please enter a location for manual search.');
+        }
+    });
+}
+
+// Check for location and industry parameters in the URL on page load
+const urlParams = new URLSearchParams(window.location.search);
+const locationParam = urlParams.get('location');
+const industryParam = urlParams.get('industry');
+
+if (locationParam) {
+    if (industryParam) {
+        searchFromIndustryClick(locationParam, industryParam);
+    } else {
+        searchLocation(
+            locationParam,
+            null,
+            (lat, lon, display_name) => {
+                addMarker(lat, lon, display_name);
+                fetchData(lat, lon);
+                document.getElementById('search-input').value = display_name;
+            },
+            (errorMessage) => {
+                alert(errorMessage);
+            }
+        );
+    }
+}
 
 // Handle Location Button
 document.getElementById('location-button').addEventListener('click', () => {
@@ -359,10 +463,6 @@ async function fetchData(lat, lon) {
         // Ensure the info panel is visible
         infoPanel.style.display = 'flex';
 
-        // **Trigger Planet API analysis AFTER successful AQI fetch**
-        console.log("Triggering Planet API analysis...");
-        fetchPlanetData(lat, lon); // Call fetchPlanetData here
-
     } catch (error) {
         console.error('Error fetching data:', error);
         alert('Failed to fetch data.');
@@ -370,101 +470,3 @@ async function fetchData(lat, lon) {
         toggleSpinner(false);
     }
 }
-
-async function fetchPlanetData(lat, lon) {
-    toggleSpinner(true);
-    console.log("fetchPlanetData function called with lat:", lat, "lon:", lon);
-    planetPanel.style.display = 'flex'; // Show Planet Panel
-    planetResultsDiv.innerHTML = "<p>Analyzing Planet Imagery...</p>"; // Initial message
-
-    const planetAnalysisUrl = `/planet-analysis/?lat=${lat}&lon=${lon}`;
-
-    try {
-        const response = await fetch(planetAnalysisUrl);
-        if (!response.ok) {
-            const message = `Error fetching Planet analysis: ${response.status} ${response.statusText}`;
-            throw new Error(message);
-        }
-        const planetData = await response.json();
-        console.log("Planet Analysis Data:", planetData);
-
-        console.log("Planet Analysis Data:", planetData);
-        // Display Planet Analysis Results in the left panel
-        let planetResultsHTML = `<h3>Vegetation Change Summary</h3>`;
-        if (planetData.ndvi_change_summary) {
-            planetResultsHTML += `
-                <p>Min NDVI Change: ${planetData.ndvi_change_summary.min_change.toFixed(3)}</p>
-                <p>Max NDVI Change: ${planetData.ndvi_change_summary.max_change.toFixed(3)}</p>
-                <p>Average NDVI Change: ${planetData.ndvi_change_summary.average_change.toFixed(3)}</p>
-            `;
-        } else if (planetData.error) {
-            planetResultsHTML = `<p>Error during Planet analysis: ${planetData.error}</p>`;
-        } else {
-            planetResultsHTML = "<p>No Planet analysis summary available.</p>"; // Fallback message
-        }
-        planetResultsDiv.innerHTML = planetResultsHTML; // Update planet-results div
-
-        // Display RGB Images and Metadata
-        const oldestRgbImage = document.getElementById('oldest-rgb-image');
-        const recentRgbImage = document.getElementById('recent-rgb-image');
-        const oldestImageDate = document.getElementById('oldest-image-date');
-        const recentImageDate = document.getElementById('recent-image-date');
-        const oldestImageId = document.getElementById('oldest-image-id');
-        const recentImageId = document.getElementById('recent-image-id');
-
-
-        if (planetData.oldest_rgb_image_url) {
-            oldestRgbImage.src = planetData.oldest_rgb_image_url;
-            oldestRgbImage.style.display = 'block';
-
-            // Format and display date and ID
-            oldestImageDate.textContent = `Acquired: ${new Date(planetData.oldest_image_date).toLocaleDateString()}`; // Format date nicely
-            oldestImageId.textContent = `Item ID: ${planetData.oldest_image_id}`;
-
-            oldestImageDate.style.display = 'block'; // Show date
-            oldestImageId.style.display = 'block';   // Show ID
-
-        } else {
-            oldestRgbImage.style.display = 'none';
-            oldestImageDate.style.display = 'none'; // Hide date if no image
-            oldestImageId.style.display = 'none';   // Hide ID if no image
-            console.warn("Oldest RGB Image URL not found in response.");
-        }
-
-        if (planetData.most_recent_rgb_image_url) {
-            recentRgbImage.src = planetData.most_recent_rgb_image_url;
-            recentRgbImage.style.display = 'block';
-
-            // Format and display date and ID
-            recentImageDate.textContent = `Acquired: ${new Date(planetData.most_recent_image_date).toLocaleDateString()}`; // Format date nicely
-            recentImageId.textContent = `Item ID: ${planetData.most_recent_image_id}`;
-
-            recentImageDate.style.display = 'block'; // Show date
-            recentImageId.style.display = 'block';   // Show ID
-        } else {
-            recentRgbImage.style.display = 'none';
-            recentImageDate.style.display = 'none'; // Hide date if no image
-            recentImageId.style.display = 'none';   // Hide ID if no image
-            console.warn("Most Recent RGB Image URL not found in response.");
-        }
-
-
-        planetResultsDiv.innerHTML = ''; // Clear loading message after successful load
-        planetResultsDiv.appendChild(document.querySelector('.rgb-images')); // Re-append rgb-images div
-        planetResultsDiv.appendChild(ndviSummaryDiv); // Re-append ndviSummaryDiv
-
-
-    } catch (error) {
-        console.error('Error fetching Planet data:', error);
-        planetResultsDiv.innerHTML = `<p>Failed to fetch Planet analysis data: ${error.message}</p>`; // Display error in panel
-        alert('Failed to fetch Planet analysis data.');
-    } finally {
-        toggleSpinner(false);
-    }
-}
-
-// CLOSE PLANET PANEL BUTTON
-document.getElementById('closePlanetBtn').addEventListener('click', () => {
-    console.log("Close Planet Panel button clicked!");
-    planetPanel.style.display = 'none';
-});

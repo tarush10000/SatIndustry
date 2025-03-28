@@ -26,6 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 OPENWEATHERAPI_KEY = os.getenv('SATINDUSTRY_OPENWEATHERAPIKEY')
 PLANET_API_KEY = os.getenv('SATINDUSTRY_PLANET_API')
+GEOAPIFY_API_KEY = os.getenv('GEOAPIFY_API')
+SENTINEL_API_KEY = os.getenv('SENTINEL_API')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
