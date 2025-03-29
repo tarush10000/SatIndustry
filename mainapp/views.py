@@ -249,6 +249,7 @@ import joblib
 import pandas as pd
 from datetime import datetime, timedelta
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import google.generativeai as genai
 
 # Configuration for the model
 SEQ_LENGTH = 72
@@ -258,14 +259,23 @@ FEATURES = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "s
 TARGETS = ["so2", "no2", "co", "pm2_5", "pm10"]
 
 # Function to load the appropriate model based on industry
-def load_industry_model(industry):
-    if 'cement' in industry.lower():
+def load_industry_model(industry, location):
+    api = settings.GEMINI_API_KEY
+    genai.configure(api_key=api)
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    response = model.generate_content(
+            f"For the given industry: {industry} situated at {location} "
+            f"Return in 2 words whether the industry is a Cement Industry, Power Plant, Tannery, Steel Plant or something else",
+        )
+    print(response.text)
+    response = response.text
+    if 'cement' in response.lower():
         model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model.pkl')
-    elif 'power plant' in industry.lower():
+    elif 'power' in response.lower():
         model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_powerplant_model.pkl')
-    elif 'tannery' in industry.lower():
+    elif 'tannery' in response.lower():
         model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_tannery_model.pkl')
-    elif 'steel' in industry.lower():
+    elif 'steel' in response.lower():
         model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_steel_model.pkl')
     else:
         model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model.pkl')
@@ -355,6 +365,7 @@ def fetch_historical_air_pollution(lat, lon, days=10, api_key=None):
 
 def preprocess_data(weather_df, air_pollution_df):
     final_df = pd.merge(weather_df, air_pollution_df, on="timestamp", how="inner")
+    print(final_df.head())
     final_df['timestamp'] = pd.to_datetime(final_df['timestamp'])
     final_df = final_df.set_index('timestamp').sort_index()
     final_df = final_df[~final_df.index.duplicated(keep='first')]
@@ -389,33 +400,68 @@ def create_sequences(data: pd.DataFrame, seq_length: int):
         sequences.append(seq.values)
     return np.array(sequences)
 
+def mitigation_stratergies(industry, location, predicted_air_quality, current_air_quality, current_date): 
+    api = settings.GEMINI_API_KEY
+    genai.configure(api_key=api)
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    script = model.generate_content(
+            f"For the given industry: {industry} at {location}"
+            f"This is the current air quality: {current_air_quality}",
+            f"and this is the predicted air quality: {predicted_air_quality}"
+            f"on {current_date}"
+            f"Generate a mitigation strategy to reduce the pollution levels in the area."
+    )
+
 def get_coordinates_here(request):
     location_name = request.GET.get('q')
     industry = request.GET.get('industry')
     print(f"Searching for location: {location_name}, Industry: {industry}")
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    response = model.generate_content(
+            f"For the given industry: {industry} at {location_name}"
+            f"Return in a comma separated format: Name of Place, City, State, Country. NO OTHER TEXT OR INFORMATION",
+        ).text
+    print(response)
+    name, city, state, country = response.split(",")
+    location_name = f"{name}, {city}, {state}, {country}"
     if location_name and industry:
         api_key = settings.GEOAPIFY_API_KEY
         base_url = 'https://api.geoapify.com/v1/geocode/search'
         params = {
-            'text': industry + ',' + location_name,
-            'apiKey': api_key
+            'apiKey': api_key,
+            'name': name,
+            'city': city,
+            'country': country
+        }
+        params2 = {
+            'apiKey': api_key,
+            'city' : city,
+            'country': country
         }
         headers = CaseInsensitiveDict()
         headers["Accept"] = "application/json"
-
         try:
             response = requests.get(base_url, params=params, headers=headers)
-            response.raise_for_status()
+            print(response)
+            if response.status_code != 200:
+                response2 = requests.get(base_url, params=params2, headers=headers)
+                print(response2)
+                response.raise_for_status()
+            else:
+                response.raise_for_status()
+
             data = response.json()
             if data.get('features'):
                 feature = data['features'][0]
                 longitude = feature['geometry']['coordinates'][0]
                 latitude = feature['geometry']['coordinates'][1]
                 display_name = feature['properties']['formatted']
-
+                
+                print(f"Coordinates: {latitude}, {longitude}")
+                print(f"Display Name: {display_name}")
+                
                 # Load the appropriate model
-                model = load_industry_model(industry)
-                print(model)
+                model = load_industry_model(industry, location_name)
                 print(f"Model loaded for industry: {industry}")
                 if model:
                     # Fetch historical data for the location
@@ -426,8 +472,14 @@ def get_coordinates_here(request):
                     print(air_pollution_df)
                     if not weather_df.empty and not air_pollution_df.empty:
                         print("Data fetched successfully.")
+                        print(f"Weather Data: {weather_df.head()}")
+                        print(f"Air Pollution Data: {air_pollution_df.head()}")
                         final_df = preprocess_data(weather_df, air_pollution_df)
+                        print(f"Preprocessed Data: {final_df.head()}")
+                        print(f"Final Data Shape: {final_df.shape}")
+                        print("Data preprocessed successfully.")
                         X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
+                        print(f"Sequences created: {X_new.shape}")
                         print(f"Data shape: {X_new.shape}")
                         if X_new.size > 0:
                             predictions = model.predict(X_new)
@@ -439,10 +491,8 @@ def get_coordinates_here(request):
                             return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': 'Not enough data to make a prediction.'})
                     else:
                         return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': 'Could not fetch historical data.'})
-
                 else:
-                    return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': f'Model not found for industry: {industry}'})
-
+                    return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': f'Model not loading'})
             else:
                 return JsonResponse({'error': f'Location "{location_name}" not found'}, status=404)
         except requests.exceptions.RequestException as e:

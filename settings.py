@@ -28,6 +28,7 @@ OPENWEATHERAPI_KEY = os.getenv('SATINDUSTRY_OPENWEATHERAPIKEY')
 PLANET_API_KEY = os.getenv('SATINDUSTRY_PLANET_API')
 GEOAPIFY_API_KEY = os.getenv('GEOAPIFY_API')
 SENTINEL_API_KEY = os.getenv('SENTINEL_API')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
