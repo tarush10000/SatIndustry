@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         data.industries.forEach(industry => {
                             const row = document.createElement('tr');
                             row.dataset.url = industry.url; // Store the URL in a data attribute
+                            row.dataset.lat = industry.latitude; // Store latitude in row.dataset.lat
+                            row.dataset.lon = industry.longitude; // Store longitude in row.dataset.lon
 
                             const nameCell = document.createElement('td');
                             nameCell.textContent = industry.name;
@@ -65,9 +67,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Add event listener for row clicks to redirect to data page
                         tbody.addEventListener('click', function(event) {
                             const clickedRow = event.target.closest('tr');
-                            if (clickedRow && clickedRow.dataset.url) {
+                            if (clickedRow && clickedRow.dataset.url && clickedRow.dataset.lat && clickedRow.dataset.lon) {
                                 const industryName = clickedRow.querySelector('td:first-child').textContent;
-                                window.location.href = `${clickedRow.dataset.url}&industry=${encodeURIComponent(industryName)}`;
+                                const latitude = clickedRow.dataset.lat;
+                                const longitude = clickedRow.dataset.lon;
+                                window.location.href = `${clickedRow.dataset.url}&industry=${encodeURIComponent(industryName)}&latitude=${latitude}&longitude=${longitude}`;
                             }
                         });
 

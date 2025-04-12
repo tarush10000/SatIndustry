@@ -12,10 +12,93 @@
     <script src="https://unpkg.com/leaflet-velocity"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Prediction Panel */
+        #prediction-panel {
+            position: absolute;
+            top: 10px; /* Adjust as needed */
+            left: 10px; /* Adjust as needed */
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1000; /* Ensure it's above the map */
+            width: 300px; /* Adjust width as needed */
+            max-height: calc(100vh - 20px); /* Prevent overflow */
+            overflow-y: auto;
+            display: none; /* Initially hidden */
+        }
+
+        #prediction-panel.open {
+            display: block;
+        }
+
+        #prediction-panel .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+        /*
+        #prediction-panel .panel-content {
+        } */
+
+        #prediction-panel h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        #prediction-panel .info-header {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #prediction-data p,
+        #mitigation-strategies p {
+            line-height: 1.6;
+            color: #666;
+        }
+
+        /* Style for the close button inside the panel */
+        #closePredictionBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+    </style>
 </head>
 
 <body>
     <div id="map"></div>
+
+    <div id="prediction-panel">
+        <button class="close-btn" id="closePredictionBtn">&times;</button>
+        <div class="panel-content">
+            <h2>Pollution Prediction</h2>
+            <div id="prediction-data">
+                <p>Loading prediction data...</p>
+            </div>
+            <div class="info-header">Mitigation Strategies</div>
+            <div id="mitigation-strategies">
+                <p>Mitigation strategies will be displayed here.</p>
+            </div>
+            </div>
+    </div>
+
     <div class="button-container">
         <button id="toggle-clouds" class="modern-button">
             <i class="fas fa-cloud"></i>
@@ -32,28 +115,6 @@
         <input type="text" id="search-input" placeholder="Enter location...">
         <button id="search-button"><i class="fas fa-search"></i></button>
         <button id="location-button"><i class="fas fa-location-arrow"></i></button>
-    </div>
-    <div id="planet-panel" style="display:none;">
-        <button id="closePlanetBtn" class="close-button">&times;</button>
-        <h2>Planet Imagery Analysis</h2>
-        <div id="planet-results">
-            <p>Planet analysis results will be displayed here after you search for a location and Planet data is processed.</p>
-            <div class="rgb-images">
-                <div class="image-container">
-                    <h4>Oldest Image (RGB)</h4>
-                    <img id="oldest-rgb-image" src="" alt="Oldest RGB Image">
-                    <p class="image-date" id="oldest-image-date"></p>
-                    <p class="image-metadata" id="oldest-image-id"></p>
-                </div>
-                <div class="image-container">
-                    <h4>Most Recent Image (RGB)</h4>
-                    <img id="recent-rgb-image" src="" alt="Most Recent RGB Image">
-                    <p class="image-date" id="recent-image-date"></p>
-                    <p class="image-metadata" id="recent-image-id"></p>
-                </div>
-            </div>
-            <div id="ndvi-summary"></div>
-        </div>
     </div>
     <div id="info-panel">
         <button class="close-btn" id="closeBtn">&times;</button>

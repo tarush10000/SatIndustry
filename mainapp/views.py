@@ -8,6 +8,8 @@ import requests
 import logging
 import requests
 import numpy as np
+from django.views.decorators.http import require_GET
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ def get_air_pollution_data(request):
     if not lat or not lon:
         return JsonResponse({'error': 'Latitude and longitude are required parameters.'}, status=400)
 
-    api_key = settings.OPENWEATHERAPI_KEY # Securely access API key
+    api_key = settings.OPENWEATHERAPI_KEY
     if not api_key:
         logger.error("OPENWEATHERAPI_KEY is not set in Django settings.")
         return JsonResponse({'error': 'API key not configured on server.'}, status=500)
@@ -178,45 +180,48 @@ import random
 from django.http import JsonResponse
 from django.urls import reverse
 
+import random
+from django.http import JsonResponse
+from django.urls import reverse
+
 def get_polluting_industries(request):
     industry_type = request.GET.get('industry', None)
     if industry_type:
         industries_data = {
             "Cement": [
-                {"name": "Lafarge Holcim", "location": "Zurich, Switzerland"},
-                {"name": "Anhui Conch Cement", "location": "Wuhu, China"},
-                {"name": "China National Building Material", "location": "Beijing, China"},
-                {"name": "HeidelbergCement", "location": "Heidelberg, Germany"},
-                {"name": "Cemex", "location": "Monterrey, Mexico"},
-                {"name": "Shree Cement", "location": "Beawar, India"},
-                {"name": "UltraTech Cement", "location": "Mumbai, India"},
+                {"name": "UltraTech Cement", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
+                {"name": "Shree Cement", "location": "Beawar, India", "latitude": 26.1000, "longitude": 74.3200},
+                {"name": "Ambuja Cements", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
+                {"name": "ACC Limited", "location": "Mumbai, India", "latitude": 19.20398870503228, "longitude": 72.96402733045294},
+                {"name": "Dalmia Bharat Limited", "location": "New Delhi, India", "latitude": 28.7041, "longitude": 77.1025},
+                {"name": "JK Cement", "location": "Kanpur, India", "latitude": 26.4499, "longitude": 80.3319},
+                {"name": "Birla Corporation", "location": "Kolkata, India", "latitude": 22.5726, "longitude": 88.3639},
             ],
             "Power plant": [
-                {"name": "Taichung Power Plant", "location": "Taichung, Taiwan"},
-                {"name": "Drax Power Station", "location": "Selby, UK"},
-                {"name": "Belchatow Power Station", "location": "Bełchatów, Poland"},
-                {"name": "Ratcliffe-on-Soar Power Station", "location": "Nottinghamshire, UK"},
-                {"name": "Kozienice Power Station", "location": "Kozienice, Poland"},
-                {"name": "Rihand Super Thermal Power Station", "location": "Sonbhadra, India"},
-                {"name": "Mundra Thermal Power Station", "location": "Mundra, India"},
+                {"name": "Singrauli Super Thermal Power Station", "location": "Singrauli, India", "latitude": 24.2000, "longitude": 82.6800},
+                {"name": "Vindhyachal Thermal Power Station", "location": "Singrauli, India", "latitude": 24.1300, "longitude": 82.6700},
+                {"name": "Mundra Thermal Power Station", "location": "Mundra, India", "latitude": 22.8400, "longitude": 69.7300},
+                {"name": "Sasan Ultra Mega Power Project", "location": "Sasan, India", "latitude": 24.0500, "longitude": 82.7900},
+                {"name": "Korba Super Thermal Power Station", "location": "Korba, India", "latitude": 22.3500, "longitude": 82.6800},
+                {"name": "Rihand Super Thermal Power Station", "location": "Sonbhadra, India", "latitude": 24.0300, "longitude": 83.0200},
+                {"name": "Farakka Super Thermal Power Station", "location": "Farakka, India", "latitude": 24.8300, "longitude": 87.9300},
             ],
             "Tannery": [
-                {"name": "Hazaribagh Tanneries (formerly)", "location": "Dhaka, Bangladesh"},
-                {"name": "Kanpur Leather Cluster", "location": "Kanpur, India"},
-                {"name": "Fez Leather Souk", "location": "Fez, Morocco"},
-                {"name": "Sava Leather Tannery Zone", "location": "Addis Ababa, Ethiopia"},
-                {"name": "Rinos Leather", "location": "Leon, Mexico"},
-                {"name": "Basukinath Tanners", "location": "Basukinath, India"},
-                {"name": "Ambur Leather Cluster", "location": "Ambur, India"},
+                {"name": "Kanpur Leather Cluster", "location": "Kanpur, India", "latitude": 26.4499, "longitude": 80.3319},
+                {"name": "Ambur Leather Cluster", "location": "Ambur, India", "latitude": 12.7900, "longitude": 78.7100},
+                {"name": "Ranipet Leather Industrial Estate", "location": "Ranipet, India", "latitude": 12.9700, "longitude": 79.3300},
+                {"name": "Dindigul Leather Cluster", "location": "Dindigul, India", "latitude": 10.3800, "longitude": 77.9900},
+                {"name": "Vaniyambadi Leather Cluster", "location": "Vaniyambadi, India", "latitude": 12.6700, "longitude": 78.6200},
+                {"name": "Basukinath Tanners", "location": "Basukinath, India", "latitude": 24.1600, "longitude": 87.2300},
+                {"name": "Kolkata Leather Complex", "location": "Kolkata, India", "latitude": 22.5726, "longitude": 88.3639},
             ],
             "Steel": [
-                {"name": "ArcelorMittal", "location": "Luxembourg City, Luxembourg"},
-                {"name": "China Baowu Steel Group", "location": "Shanghai, China"},
-                {"name": "Nippon Steel Corporation", "location": "Tokyo, Japan"},
-                {"name": "POSCO", "location": "Pohang, South Korea"},
-                {"name": "JSW Steel", "location": "Mumbai, India"},
-                {"name": "Tata Steel", "location": "Mumbai, India"},
-                {"name": "Steel Authority of India Limited (SAIL)", "location": "New Delhi, India"},
+                {"name": "JSW Steel", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
+                {"name": "Tata Steel", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
+                {"name": "Steel Authority of India Limited (SAIL)", "location": "New Delhi, India", "latitude": 28.7041, "longitude": 77.1025},
+                {"name": "ArcelorMittal Nippon Steel India", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
+                {"name": "Jindal Steel and Power", "location": "New Delhi, India", "latitude": 28.7041, "longitude": 77.1025},
+                {"name": "Rashtriya Ispat Nigam Limited (RINL)", "location": "Visakhapatnam, India", "latitude": 17.6868, "longitude": 83.2185},
             ],
         }
 
@@ -230,7 +235,13 @@ def get_polluting_industries(request):
             results = []
             for industry in sampled_industries:
                 data_page_url = reverse('data_search') + f'?location={industry["location"]}'
-                results.append({"name": industry["name"], "location": industry["location"], "url": data_page_url})
+                results.append({
+                    "name": industry["name"],
+                    "location": industry["location"],
+                    "latitude": industry["latitude"],
+                    "longitude": industry["longitude"],
+                    "url": data_page_url,
+                })
 
             return JsonResponse({"industries": results})
         else:
@@ -364,7 +375,22 @@ def fetch_historical_air_pollution(lat, lon, days=10, api_key=None):
     return pd.DataFrame(all_data)
 
 def preprocess_data(weather_df, air_pollution_df):
+    print("Preprocessing started...")
+    print("Weather DataFrame:")
+    print(weather_df.head())
+    print("Air Pollution DataFrame:")
+    print(air_pollution_df.head())
+    print("Weather DataFrame Timestamp dtype:", weather_df['timestamp'].dtype)
+    print("Air Pollution DataFrame Timestamp dtype:", air_pollution_df['timestamp'].dtype)
+    print("Length of weather_df:", len(weather_df))
+    print("Length of air_pollution_df:", len(air_pollution_df))
+
+    # Make the 'timestamp' column in air_pollution_df timezone-aware in UTC
+    air_pollution_df['timestamp'] = pd.to_datetime(air_pollution_df['timestamp'], utc=True)
+    print("Air Pollution DataFrame Timestamp dtype after conversion:", air_pollution_df['timestamp'].dtype)
+
     final_df = pd.merge(weather_df, air_pollution_df, on="timestamp", how="inner")
+    print("5678")
     print(final_df.head())
     final_df['timestamp'] = pd.to_datetime(final_df['timestamp'])
     final_df = final_df.set_index('timestamp').sort_index()
@@ -400,17 +426,20 @@ def create_sequences(data: pd.DataFrame, seq_length: int):
         sequences.append(seq.values)
     return np.array(sequences)
 
-def mitigation_stratergies(industry, location, predicted_air_quality, current_air_quality, current_date): 
+def mitigation_stratergies(industry, location, predicted_air_quality, current_air_quality, current_date):
     api = settings.GEMINI_API_KEY
     genai.configure(api_key=api)
     model = genai.GenerativeModel("gemini-2.0-flash")
-    script = model.generate_content(
-            f"For the given industry: {industry} at {location}"
-            f"This is the current air quality: {current_air_quality}",
-            f"and this is the predicted air quality: {predicted_air_quality}"
-            f"on {current_date}"
-            f"Generate a mitigation strategy to reduce the pollution levels in the area."
-    )
+    prompt = f"For the given industry: {industry} at {location}. " \
+             f"The current air quality is: {current_air_quality}. " \
+             f"The predicted air quality for the next hour is: {predicted_air_quality} on {current_date}. " \
+             f"Generate a concise mitigation strategy (max 3 sentences) to reduce the predicted pollution levels in the area."
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        logger.error(f"Error generating mitigation strategies: {e}")
+        return "Failed to generate mitigation strategies."
 
 def get_coordinates_here(request):
     location_name = request.GET.get('q')
@@ -418,9 +447,9 @@ def get_coordinates_here(request):
     print(f"Searching for location: {location_name}, Industry: {industry}")
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(
-            f"For the given industry: {industry} at {location_name}"
-            f"Return in a comma separated format: Name of Place, City, State, Country. NO OTHER TEXT OR INFORMATION",
-        ).text
+        f"For the given industry: {industry} at {location_name} "
+        f"Return in a comma separated format: Name of Place, City, State, Country. NO OTHER TEXT OR INFORMATION",
+    ).text
     print(response)
     name, city, state, country = response.split(",")
     location_name = f"{name}, {city}, {state}, {country}"
@@ -456,13 +485,14 @@ def get_coordinates_here(request):
                 longitude = feature['geometry']['coordinates'][0]
                 latitude = feature['geometry']['coordinates'][1]
                 display_name = feature['properties']['formatted']
-                
+
                 print(f"Coordinates: {latitude}, {longitude}")
                 print(f"Display Name: {display_name}")
-                
+
                 # Load the appropriate model
                 model = load_industry_model(industry, location_name)
                 print(f"Model loaded for industry: {industry}")
+                print(model)
                 if model:
                     # Fetch historical data for the location
                     openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
@@ -486,7 +516,20 @@ def get_coordinates_here(request):
                             # Assuming you want to return the last prediction for the next hour
                             last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
                             print(f"Predictions: {last_prediction}")
-                            return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'predictions': last_prediction, 'targets': TARGETS})
+
+                            # Fetch current air pollution data for mitigation strategies
+                            current_air_pollution_response = requests.get(
+                                f'http://api.openweathermap.org/data/2.5/air_pollution?lat={latitude}&lon={longitude}&appid={settings.OPENWEATHERAPI_KEY}'
+                            )
+                            current_air_pollution_data = current_air_pollution_response.json().get('list', [])[0].get('components', {}) if current_air_pollution_response.status_code == 200 and current_air_pollution_response.json().get('list') else {}
+
+                            current_air_quality_str = ", ".join([f"{k}: {v}" for k, v in current_air_pollution_data.items()])
+                            predicted_air_quality_str = ", ".join([f"{TARGETS[i]}: {last_prediction[i]:.2f}" for i in range(len(TARGETS))])
+                            current_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                            mitigation_strategies = mitigation_stratergies(industry, location_name, predicted_air_quality_str, current_air_quality_str, current_date_str)
+
+                            return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'predictions': last_prediction, 'targets': TARGETS, 'mitigationStrategies': mitigation_strategies})
                         else:
                             return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': display_name, 'error': 'Not enough data to make a prediction.'})
                     else:
@@ -501,3 +544,69 @@ def get_coordinates_here(request):
             return JsonResponse({'error': f'Error processing request: {e}'}, status=500)
     else:
         return JsonResponse({'error': 'Missing location or industry query parameter'}, status=400)
+    
+    
+@require_GET
+def get_predictions_and_mitigation(request):
+    industry = request.GET.get('industry')
+    latitude_str = request.GET.get('latitude')
+    longitude_str = request.GET.get('longitude')
+
+    if not industry or not latitude_str or not longitude_str:
+        return JsonResponse({'error': 'Missing industry, latitude, or longitude'}, status=400)
+
+    try:
+        latitude = float(latitude_str)
+        longitude = float(longitude_str)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
+
+    location_name = industry # Use the fetched display name for model loading
+
+    # Load the appropriate model
+    model = load_industry_model(industry, location_name)
+    print(f"Model loaded for industry: {industry}")
+    print(model)
+    if model:
+        # Fetch historical data for the location
+        openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
+        weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
+        print(weather_df)
+        air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
+        print(air_pollution_df)
+        if not weather_df.empty and not air_pollution_df.empty:
+            print("Data fetched successfully.")
+            print(f"Weather Data: {weather_df.head()}")
+            print(f"Air Pollution Data: {air_pollution_df.head()}")
+            final_df = preprocess_data(weather_df, air_pollution_df)
+            print(f"Preprocessed Data: {final_df.head()}")
+            print(f"Final Data Shape: {final_df.shape}")
+            print("Data preprocessed successfully.")
+            X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
+            print(f"Sequences created: {X_new.shape}")
+            print(f"Data shape: {X_new.shape}")
+            if X_new.size > 0:
+                predictions = model.predict(X_new)
+                # Assuming you want to return the last prediction for the next hour
+                last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
+                print(f"Predictions: {last_prediction}")
+
+                # Fetch current air pollution data for mitigation strategies
+                current_air_pollution_response = requests.get(
+                    f'http://api.openweathermap.org/data/2.5/air_pollution?lat={latitude}&lon={longitude}&appid={settings.OPENWEATHERAPI_KEY}'
+                )
+                current_air_pollution_data = current_air_pollution_response.json().get('list', [])[0].get('components', {}) if current_air_pollution_response.status_code == 200 and current_air_pollution_response.json().get('list') else {}
+
+                current_air_quality_str = ", ".join([f"{k}: {v}" for k, v in current_air_pollution_data.items()])
+                predicted_air_quality_str = ", ".join([f"{TARGETS[i]}: {last_prediction[i]:.2f}" for i in range(len(TARGETS))])
+                current_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                mitigation_strategies = mitigation_stratergies(industry, location_name, predicted_air_quality_str, current_air_quality_str, current_date_str)
+
+                return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'predictions': last_prediction, 'targets': TARGETS, 'mitigationStrategies': mitigation_strategies})
+            else:
+                return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'error': 'Not enough data to make a prediction.'})
+        else:
+            return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'error': 'Could not fetch historical data.'})
+    else:
+        return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'error': f'Model not loading'})

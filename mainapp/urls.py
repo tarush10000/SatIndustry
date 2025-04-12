@@ -12,5 +12,7 @@ urlpatterns = [
     path('cloud-layer-url/', views.get_cloud_layer_url, name='cloud_layer_url'),
     path('wind-layer-url/', views.get_wind_layer_url, name='wind_layer_url'),
     path('get_polluting_industries/', views.get_polluting_industries, name='get_polluting_industries'),
+    path('get_coordinates_here/', views.get_coordinates_here, name='get_coordinates_here'),
     path('get_here_coordinates/', views.get_coordinates_here, name='get_here_coordinates'),
+    path('get_predictions_and_mitigation/', views.get_predictions_and_mitigation, name='get_predictions_and_mitigation'),
 ]
