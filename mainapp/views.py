@@ -189,39 +189,52 @@ def get_polluting_industries(request):
     if industry_type:
         industries_data = {
             "Cement": [
-                {"name": "UltraTech Cement", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
-                {"name": "Shree Cement", "location": "Beawar, India", "latitude": 26.1000, "longitude": 74.3200},
-                {"name": "Ambuja Cements", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
+                {"name": "UltraTech Cement", "location": "Mumbai, India", "latitude": 19.250548044827784, "longitude": 72.843470708654},
+                {"name": "Shree Cement", "location": "Beawar, India", "latitude": 26.08134560261072, "longitude": 74.38362414837279},
+                {"name": "Ambuja Cements", "location": "Mumbai, India", "latitude": 19.002223730181832, "longitude": 73.03229075158546},
                 {"name": "ACC Limited", "location": "Mumbai, India", "latitude": 19.20398870503228, "longitude": 72.96402733045294},
-                {"name": "Dalmia Bharat Limited", "location": "New Delhi, India", "latitude": 28.7041, "longitude": 77.1025},
-                {"name": "JK Cement", "location": "Kanpur, India", "latitude": 26.4499, "longitude": 80.3319},
-                {"name": "Birla Corporation", "location": "Kolkata, India", "latitude": 22.5726, "longitude": 88.3639},
+                {"name": "Dalmia Bharat Limited", "location": "New Delhi, India", "latitude": 28.631640375927617, "longitude": 77.22651347711746},
+                {"name": "Birla Corporation", "location": "Kolkata, India", "latitude": 22.54410699789887, "longitude": 88.36505952212816},
+                {"name": "Ramco Cements", "location": "Chennai, India", "latitude": 13.052844109796666, "longitude": 80.26891335323748},
+                {"name": "India Cements", "location": "Chennai, India", "latitude": 13.027089962137735, "longitude": 80.26822670771199},
+                {"name": "Orient Cement", "location": "Hyderabad, India", "latitude": 17.543981808592296, "longitude": 78.50716275672416},
             ],
             "Power plant": [
-                {"name": "Singrauli Super Thermal Power Station", "location": "Singrauli, India", "latitude": 24.2000, "longitude": 82.6800},
-                {"name": "Vindhyachal Thermal Power Station", "location": "Singrauli, India", "latitude": 24.1300, "longitude": 82.6700},
-                {"name": "Mundra Thermal Power Station", "location": "Mundra, India", "latitude": 22.8400, "longitude": 69.7300},
-                {"name": "Sasan Ultra Mega Power Project", "location": "Sasan, India", "latitude": 24.0500, "longitude": 82.7900},
-                {"name": "Korba Super Thermal Power Station", "location": "Korba, India", "latitude": 22.3500, "longitude": 82.6800},
-                {"name": "Rihand Super Thermal Power Station", "location": "Sonbhadra, India", "latitude": 24.0300, "longitude": 83.0200},
-                {"name": "Farakka Super Thermal Power Station", "location": "Farakka, India", "latitude": 24.8300, "longitude": 87.9300},
+                {"name": "Singrauli Super Thermal Power Station", "location": "Singrauli, India", "latitude": 24.120970609267747, "longitude": 82.693090450962},
+                {"name": "Vindhyachal Thermal Power Station", "location": "Singrauli, India", "latitude": 24.099208199421874, "longitude": 82.67562493562268},
+                {"name": "Adani Power Limited Thermal Power Station", "location": "Mundra, India", "latitude": 22.823099198964474, "longitude": 69.55286753561526},
+                {"name": "Reliance Sasan Ultra Mega Power Project", "location": "Sasan, India", "latitude": 23.97961345204601, "longitude": 82.62691587324335},
+                {"name": "NTPC Korba Super Thermal Power Station", "location": "Korba, India", "latitude": 22.386074765444544, "longitude": 82.68343993560642},
+                {"name": "NTPC Rihand Super Thermal Power Station", "location": "Sonbhadra, India", "latitude": 24.03475499179369, "longitude": 82.81009557609129},
+                {"name": "NTPC Farakka Super Thermal Power Station", "location": "Farakka, India", "latitude": 24.773510320104375, "longitude": 87.89702967793565},
+                {"name": "NTPC Kahalgaon Super Thermal Power Station", "location": "Kahalgaon, India", "latitude": 25.237547780776634, "longitude": 87.26742238164822},
+                {"name": "Mejia Thermal Power Station", "location": "Mejia, India", "latitude": 23.463950366922987, "longitude": 87.13179192027268},
+                {"name": "Bokaro Thermal Power Station(BTPS)", "location": "Bokaro, India", "latitude": 23.78491635197923, "longitude": 85.87825394912915},
             ],
             "Tannery": [
-                {"name": "Kanpur Leather Cluster", "location": "Kanpur, India", "latitude": 26.4499, "longitude": 80.3319},
-                {"name": "Ambur Leather Cluster", "location": "Ambur, India", "latitude": 12.7900, "longitude": 78.7100},
-                {"name": "Ranipet Leather Industrial Estate", "location": "Ranipet, India", "latitude": 12.9700, "longitude": 79.3300},
-                {"name": "Dindigul Leather Cluster", "location": "Dindigul, India", "latitude": 10.3800, "longitude": 77.9900},
-                {"name": "Vaniyambadi Leather Cluster", "location": "Vaniyambadi, India", "latitude": 12.6700, "longitude": 78.6200},
-                {"name": "Basukinath Tanners", "location": "Basukinath, India", "latitude": 24.1600, "longitude": 87.2300},
-                {"name": "Kolkata Leather Complex", "location": "Kolkata, India", "latitude": 22.5726, "longitude": 88.3639},
+                {"name": "Kanpur Leather Cluster", "location": "Kanpur, India", "latitude": 26.36976374936636, "longitude": 80.26920083376281},
+                {"name": "Ambur Leather Cluster", "location": "Ambur, India", "latitude": 12.78555512112967, "longitude": 78.72022853513525},
+                {"name": "Ranipet Leather Industrial Estate", "location": "Ranipet, India", "latitude": 12.97106389983351, "longitude":  79.29919181579598},
+                {"name": "Khaja Moideen Leather Tannery", "location": "Pallapatti, India", "latitude": 10.356997769578435, "longitude": 77.94141596531541},
+                {"name": "Vaniyambadi Leather Cluster", "location": "Vaniyambadi, India", "latitude": 12.687264434487899, "longitude": 78.62721565806284},
+                {"name": "Kolkata Leather Complex", "location": "Kolkata, India", "latitude": 22.497891155851956, "longitude": 88.50977035342015},
+                {"name": "Sathik Tanning Company", "location": "Chennai, India", "latitude": 13.08812194991736, "longitude": 80.26703312413918},
+                {"name": "Tarun Tanning Industries", "location": "Agra, India", "latitude": 27.199730382769566, "longitude": 78.00412893972815},
+                {"name": "Jalandhar Leather Cluster", "location": "Jalandhar, India", "latitude": 31.33931478701642, "longitude": 75.53465738274737},
             ],
             "Steel": [
-                {"name": "JSW Steel", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
-                {"name": "Tata Steel", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
-                {"name": "Steel Authority of India Limited (SAIL)", "location": "New Delhi, India", "latitude": 28.7041, "longitude": 77.1025},
-                {"name": "ArcelorMittal Nippon Steel India", "location": "Mumbai, India", "latitude": 19.0760, "longitude": 72.8777},
-                {"name": "Jindal Steel and Power", "location": "New Delhi, India", "latitude": 28.7041, "longitude": 77.1025},
-                {"name": "Rashtriya Ispat Nigam Limited (RINL)", "location": "Visakhapatnam, India", "latitude": 17.6868, "longitude": 83.2185},
+                {"name": "JSW Steel (Vijayanagar)", "location": "Toranagallu, Karnataka", "latitude": 15.183917077333625, "longitude": 76.65964272213336},
+                {"name": "Tata Steel (Jamshedpur)", "location": "Jamshedpur, Jharkhand", "latitude": 22.791260006474772, "longitude": 86.19700630146932},
+                {"name": "Steel Authority of India Limited (Bhilai Steel Plant)", "location": "Bhilai, Chhattisgarh", "latitude": 21.195491173487618, "longitude": 81.38497629329093},
+                {"name": "ArcelorMittal Nippon Steel India (Hazira)", "location": "Hazira, Gujarat", "latitude": 21.12898485336033, "longitude": 72.65563334310765},
+                {"name": "Jindal Steel and Power (Raigarh)", "location": "Raigarh, Chhattisgarh", "latitude": 21.92472666919913, "longitude": 83.34714539825828},
+                {"name": "Rashtriya Ispat Nigam Limited (Visakhapatnam Steel Plant)", "location": "Visakhapatnam, Andhra Pradesh", "latitude": 17.608092080562546, "longitude":  83.20527959331055},
+                {"name": "JSW Steel (Dolvi)", "location": "Dolvi, Maharashtra", "latitude": 18.697496965527414, "longitude": 73.03436209513367},
+                {"name": "Tata Steel (Kalinganagar)", "location": "Kalinganagar, Odisha", "latitude": 20.97631553868611, "longitude": 86.00537702027131},
+                {"name": "Steel Authority of India Limited (Rourkela Steel Plant)", "location": "Rourkela, Odisha", "latitude": 22.220419641479797, "longitude": 84.8602984933045},
+                {"name": "ArcelorMittal Nippon Steel India (Parabur)", "location": "Parabur, Odisha", "latitude": 20.47683633448304, "longitude": 86.61441202993318},
+                {"name": "Jindal Steel and Power (Angul)", "location": "Angul, Odisha", "latitude": 20.90531336448541, "longitude": 85.01361316259757},
+                {"name": "Vedanta Limited (Electrosteel Steels Limited)", "location": "Bokaro Steel City, Jharkhand", "latitude": 23.724801520873896, "longitude": 86.29281301094312},
             ],
         }
 
@@ -431,9 +444,9 @@ def mitigation_stratergies(industry, location, predicted_air_quality, current_ai
     genai.configure(api_key=api)
     model = genai.GenerativeModel("gemini-2.0-flash")
     prompt = f"For the given industry: {industry} at {location}. " \
-             f"The current air quality is: {current_air_quality}. " \
-             f"The predicted air quality for the next hour is: {predicted_air_quality} on {current_date}. " \
-             f"Generate a concise mitigation strategy (max 3 sentences) to reduce the predicted pollution levels in the area."
+            f"The current air quality is: {current_air_quality}. " \
+            f"The predicted air quality for the next hour is: {predicted_air_quality} on {current_date}. " \
+            f"Generate a concise mitigation strategy (max 3 sentences) to reduce the predicted pollution levels in the area."
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -450,7 +463,6 @@ def get_coordinates_here(request):
         f"For the given industry: {industry} at {location_name} "
         f"Return in a comma separated format: Name of Place, City, State, Country. NO OTHER TEXT OR INFORMATION",
     ).text
-    print(response)
     name, city, state, country = response.split(",")
     location_name = f"{name}, {city}, {state}, {country}"
     if location_name and industry:
@@ -471,10 +483,8 @@ def get_coordinates_here(request):
         headers["Accept"] = "application/json"
         try:
             response = requests.get(base_url, params=params, headers=headers)
-            print(response)
             if response.status_code != 200:
                 response2 = requests.get(base_url, params=params2, headers=headers)
-                print(response2)
                 response.raise_for_status()
             else:
                 response.raise_for_status()
@@ -486,13 +496,8 @@ def get_coordinates_here(request):
                 latitude = feature['geometry']['coordinates'][1]
                 display_name = feature['properties']['formatted']
 
-                print(f"Coordinates: {latitude}, {longitude}")
-                print(f"Display Name: {display_name}")
-
                 # Load the appropriate model
                 model = load_industry_model(industry, location_name)
-                print(f"Model loaded for industry: {industry}")
-                print(model)
                 if model:
                     # Fetch historical data for the location
                     openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
@@ -501,22 +506,13 @@ def get_coordinates_here(request):
                     air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
                     print(air_pollution_df)
                     if not weather_df.empty and not air_pollution_df.empty:
-                        print("Data fetched successfully.")
-                        print(f"Weather Data: {weather_df.head()}")
-                        print(f"Air Pollution Data: {air_pollution_df.head()}")
                         final_df = preprocess_data(weather_df, air_pollution_df)
-                        print(f"Preprocessed Data: {final_df.head()}")
-                        print(f"Final Data Shape: {final_df.shape}")
-                        print("Data preprocessed successfully.")
                         X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
-                        print(f"Sequences created: {X_new.shape}")
-                        print(f"Data shape: {X_new.shape}")
                         if X_new.size > 0:
                             predictions = model.predict(X_new)
                             # Assuming you want to return the last prediction for the next hour
                             last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
-                            print(f"Predictions: {last_prediction}")
-
+                        
                             # Fetch current air pollution data for mitigation strategies
                             current_air_pollution_response = requests.get(
                                 f'http://api.openweathermap.org/data/2.5/air_pollution?lat={latitude}&lon={longitude}&appid={settings.OPENWEATHERAPI_KEY}'
@@ -566,31 +562,19 @@ def get_predictions_and_mitigation(request):
     # Load the appropriate model
     model = load_industry_model(industry, location_name)
     print(f"Model loaded for industry: {industry}")
-    print(model)
     if model:
         # Fetch historical data for the location
         openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
         weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
-        print(weather_df)
         air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
-        print(air_pollution_df)
         if not weather_df.empty and not air_pollution_df.empty:
-            print("Data fetched successfully.")
-            print(f"Weather Data: {weather_df.head()}")
-            print(f"Air Pollution Data: {air_pollution_df.head()}")
             final_df = preprocess_data(weather_df, air_pollution_df)
-            print(f"Preprocessed Data: {final_df.head()}")
-            print(f"Final Data Shape: {final_df.shape}")
-            print("Data preprocessed successfully.")
             X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
-            print(f"Sequences created: {X_new.shape}")
-            print(f"Data shape: {X_new.shape}")
             if X_new.size > 0:
                 predictions = model.predict(X_new)
                 # Assuming you want to return the last prediction for the next hour
                 last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
-                print(f"Predictions: {last_prediction}")
-
+                
                 # Fetch current air pollution data for mitigation strategies
                 current_air_pollution_response = requests.get(
                     f'http://api.openweathermap.org/data/2.5/air_pollution?lat={latitude}&lon={longitude}&appid={settings.OPENWEATHERAPI_KEY}'
