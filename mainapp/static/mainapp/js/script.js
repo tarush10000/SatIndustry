@@ -306,6 +306,29 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("Latitude, longitude, or industry not found in the URL.");
     }
 
+    document.getElementById('search-button').addEventListener('click', () => {
+        const location = document.getElementById('search-input').value;
+        if (location) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const { lat, lon, display_name } = data[0];
+                        addMarker(lat, lon, display_name);
+                        fetchData(lat, lon);
+                    } else {
+                        alert('Location not found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching location:', error);
+                    alert('Failed to fetch location.');
+                });
+        } else {
+            alert('Please enter a location.');
+        }
+    });
+
     const searchLocation = (locationName, industry, successCallback, failureCallback) => {
         let url = `/get_coordinates_here/?q=${encodeURIComponent(locationName)}`;
         console.log("searchLocation URL:", url);
@@ -377,6 +400,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert("Failed to load predictions and mitigation data.");
             });
     }
+
+    
+// Handle Location Button
+document.getElementById('location-button').addEventListener('click', () => {
+        console.log("Location button clicked!"); // ADDED console.log
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const { latitude, longitude } = position.coords;
+                addMarker(latitude, longitude, 'Your Location');
+                fetchData(latitude, longitude);
+            }, error => {
+                console.error('Error fetching geolocation:', error);
+                alert('Failed to get your location.');
+            });
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    });
+    
+    
+    // CLOSE BUTTON
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        console.log("Close button clicked!"); // ADDED console.log
+        panel.style.display = 'none';
+    });
 
     async function fetchData(lat, lon) {
         console.log("fetchData function called with lat:", lat, "lon:", lon);
