@@ -502,7 +502,7 @@ def get_coordinates_here(request):
                 model = load_clustering_model(industry, location_name)
                 if model:
                     # Fetch historical data for the location
-                    openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
+                    openweather_api_key = os.getenv('OPENWEATHERAPI_KEY')
                     weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
                     print(weather_df)
                     air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
@@ -555,6 +555,115 @@ def identify_industry(industry, location):
     response = response.text
     return response
 
+def fetch_data_for_3_months(LAT, LON, API_KEY):
+    print("prcoesseing")
+    import requests
+    import pandas as pd
+    import time
+    from datetime import datetime, timedelta
+
+    WEATHER_API = "https://history.openweathermap.org/data/2.5/history/city"
+    AIR_POLLUTION_API = "http://api.openweathermap.org/data/2.5/air_pollution/history"
+
+    # Function to fetch historical weather data
+    def fetch_historical_weather(lat, lon, days=182):
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days)
+
+        all_data = []
+
+        for i in range(days):
+            timestamp = int((end_date - timedelta(days=i)).timestamp())
+            print(i,"temp")
+            print(WEATHER_API)
+            print(API_KEY)
+            response = requests.get(
+                WEATHER_API,
+                params={
+                    "lat": lat,
+                    "lon": lon,
+                    "type": "hour",
+                    "start": timestamp,
+                    "cnt": 24,
+                    "appid": API_KEY,
+                    "units": "metric"
+                }
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                for record in data.get("list", []):
+                    all_data.append({
+                        "timestamp": datetime.utcfromtimestamp(record["dt"]),
+                        "temperature": record["main"]["temp"],
+                        "humidity": record["main"]["humidity"],
+                        "wind_speed": record["wind"]["speed"],
+                        "pressure": record["main"]["pressure"]
+                    })
+            else:
+                print(f"Error fetching weather data: {response.text}")
+            
+             # Avoid rate limit issues
+
+        return pd.DataFrame(all_data)
+
+    # Function to fetch historical air pollution data
+    def fetch_historical_air_pollution(lat, lon, days=182):
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days)
+
+        all_data = []
+
+        for i in range(days):
+            timestamp = int((end_date - timedelta(days=i)).timestamp())
+            print(i,"pollutatnat")
+            response = requests.get(
+                AIR_POLLUTION_API,
+                params={
+                    "lat": lat,
+                    "lon": lon,
+                    "start": timestamp,
+                    "end": timestamp + 86400,  # 1-day range
+                    "appid": API_KEY
+                }
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                for record in data.get("list", []):
+                    all_data.append({
+                        "timestamp": datetime.utcfromtimestamp(record["dt"]),
+                        "co": record["components"]["co"],
+                        "no2": record["components"]["no2"],
+                        "so2": record["components"]["so2"],
+                        "o3": record["components"]["o3"],
+                        "pm2_5": record["components"]["pm2_5"],
+                        "pm10": record["components"]["pm10"],
+                        "nh3": record["components"]["nh3"]
+                    })
+            else:
+                print(f"Error fetching air pollution data: {response.text}")
+
+
+        return pd.DataFrame(all_data)
+
+    # Fetch weather and air pollution data
+    weather_df = fetch_historical_weather(LAT, LON, days=90)
+    air_pollution_df = fetch_historical_air_pollution(LAT, LON, days=90)
+
+    # Merge datasets on timestamp
+    final_df = pd.merge(weather_df, air_pollution_df, on="timestamp", how="inner")
+
+    # Save as CSV
+    # final_df.to_csv("steel_plant2.csv", index=False)
+    
+    return final_df
+    
+
+
+
+
+
 @require_GET
 def get_predictions_and_mitigation(request):
     industry = request.GET.get('industry')
@@ -571,11 +680,13 @@ def get_predictions_and_mitigation(request):
     except ValueError:
         return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
 
+    
     industry_type = identify_industry(industry, location)
     
     # Anomaly Detection
-    openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
-    # task = anomalyfunction_task.delay(latitude, longitude, openweather_api_key)
+    openweather_api_key = settings.OPENWEATHERAPI_KEY
+    
+    final_df1 = fetch_data_for_3_months(latitude, longitude, openweather_api_key)
     
     # Clustering
     clustering_model = load_clustering_model(industry_type)
@@ -587,7 +698,7 @@ def get_predictions_and_mitigation(request):
     
     if clustering_model:
         # Fetch historical data for the location
-        openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
+        openweather_api_key = os.getenv('OPENWEATHERAPI_KEY')
         weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
         air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
         if not weather_df.empty and not air_pollution_df.empty:
