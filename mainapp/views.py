@@ -285,295 +285,7 @@ N_TARGETS = 5
 FEATURES = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
 TARGETS = ["so2", "no2", "co", "pm2_5", "pm10"]
 
-# Function to load the appropriate model based on industry
-def load_clustering_model(response):
-    print("Loading model")
-    try:
-        if 'cement' in response.lower():
-            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_cement_model.pkl'))
-            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_cement.pkl'))
-            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_cement.pkl'))
-            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_cement.csv'))
-        elif 'power' in response.lower():
-            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_power_model.pkl'))
-            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_power.pkl'))
-            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_power.pkl'))
-            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_power.csv'))
-        elif 'tannery' in response.lower():
-            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_tannery_model.pkl'))
-            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_tannery.pkl'))
-            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_tannery.pkl'))
-            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_tannery.csv'))
-        elif 'steel' in response.lower():
-            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_steel_model.pkl'))
-            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_steel.pkl'))
-            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_steel.pkl'))
-            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_steel.csv'))
-        else:
-            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_cement_model.pkl'))
-            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_cement.pkl'))
-            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_cement.pkl'))
-            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_cement.csv'))
-        return kmeans, scaler, pca, industry_summary
-    except FileNotFoundError:
-        return None
-    except Exception as e:
-        print(f"Error loading model")
-        return None
-    
-def load_lstm_model(response):
-    print("Loading model")
-    try:
-        if 'cement' in response.lower():
-            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model_new.pkl'))
-        elif 'power' in response.lower():
-            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_power_model_new.pkl'))
-        elif 'tannery' in response.lower():
-            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_tannery_model_new.pkl'))
-        elif 'steel' in response.lower():
-            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_steel_model_new.pkl'))
-        else:
-            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model_new.pkl'))
-        return model
-    except FileNotFoundError:
-        return None
-    except Exception as e:
-        print(f"Error loading model")
-        return None
-
-def perform_clustering(kmeans, scaler, pca, industry_summary, new_data):
-    # Features to use
-    features = ["temperature", "humidity", "wind_speed", "pressure",
-                "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
-    pollution_features = ["co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
-
-    # Scale and transform new data
-    scaled_new = scaler.transform(new_data[features])
-    predicted_cluster = kmeans.predict(scaled_new)[0]
-    pca_coords = pca.transform(scaled_new)[0]
-    # --- Pollution Stats ---
-    print(f"\n🔷 New Industry is classified into Cluster {predicted_cluster}")
-
-    # Cluster Stats (3-months)
-    cluster_data = industry_summary[industry_summary["cluster"] == predicted_cluster]
-    cluster_stats = cluster_data[pollution_features].agg(["mean", "min", "max"])
-
-    # New Industry Stats (3-months)
-    industry_stats = new_data[pollution_features].agg(["mean", "min", "max"])
-
-    print("\n📊 Cluster Pollution Statistics (3-month aggregate):")
-    print(cluster_stats.T.round(2))
-
-    print("\n🏭 New Industry Pollution Statistics (3-month data):")
-    print(industry_stats.T.round(2))
-
-    # --- CPCB Regulatory Standards (24-hour average in µg/m³) ---
-    cpcb_limits = {
-        "co": 2000,     # converted mg/m³ → µg/m³
-        "no2": 80,
-        "so2": 80,
-        "o3": 100,
-        "pm2_5": 60,
-        "pm10": 100,
-        "nh3": 400
-    }
-
-    print("\n📏 CPCB Permissible Limits (24-hr average):")
-    for pol, limit in cpcb_limits.items():
-        print(f"{pol.upper():<6}: {limit} µg/m³")
-
-    # --- Check for Pollutants Exceeding Limits ---
-    industry_daily_mean = industry_stats.loc["mean"]
-    # --- Take only last 24 hours of data ---
-    last_24hr_data = new_data.tail(24)
-    industry_24hr_mean = last_24hr_data[pollution_features].mean()
-
-    # --- Check for Pollutants Exceeding Limits ---
-    print("\n📏 CPCB Permissible Limits (24-hr average):")
-    for pol, limit in cpcb_limits.items():
-        print(f"{pol.upper():<6}: {limit} µg/m³")
-
-    exceeding = []
-    for pol, limit in cpcb_limits.items():
-        val = industry_24hr_mean[pol]
-        print(pol,val)
-        if val > limit:
-            exceeding.append((pol.upper(), val, limit))
-
-    if exceeding:
-        print("\n⚠️ Pollutants exceeding CPCB limits (based on last 24 hours):")
-        for pol, val, limit in exceeding:
-            print(f"• {pol}: {val:.2f} µg/m³ > {limit} µg/m³")
-    else:
-        print("\n✅ All pollutants are within CPCB permissible limits (last 24 hours).")
-
-    # --- Optional: Overall Pollution Risk ---
-    avg_cluster_pollution = industry_summary.groupby("cluster")[pollution_features].mean().mean(axis=1)
-    new_avg = industry_daily_mean.mean()
-    print(f"\n📌 Average Pollution of New Industry: {new_avg:.2f}")
-
-    if new_avg > avg_cluster_pollution.max():
-        print("⚠️ This industry is more harmful than any existing cluster.")
-    elif new_avg > avg_cluster_pollution.mean():
-        print("⚠️ This industry is relatively harmful.")
-    else:
-        print("✅ This industry is within normal pollution levels.")
-    return pca_coords, cluster_stats.T.round(2), industry_stats.T.round(2), industry_daily_mean, industry_24hr_mean, exceeding, avg_cluster_pollution, new_avg
-
-def perform_anomaly_detection(df):
-    features = df.drop(columns=["timestamp"])
-    scaler = StandardScaler()
-    features_scaled = scaler.fit_transform(features)
-
-    iso_forest = IsolationForest(n_estimators=100, contamination=0.05, random_state=42)
-    df["anomaly"] = iso_forest.fit_predict(features_scaled)
-    df["anomaly"] = df["anomaly"].map({1: 0, -1: 1})
-
-    X_train, X_test, y_train, y_test = train_test_split(features_scaled, df["anomaly"], test_size=0.2, random_state=42)
-    rf = RandomForestClassifier(n_estimators=100, random_state=42)
-    rf.fit(X_train, y_train)
-
-    y_pred = rf.predict(X_test)
-    print(classification_report(y_test, y_pred))
-    print("Anomaly detection results visualized.")
-    return df
-
-def perform_lstm(model, df):
-    import pandas as pd
-    import numpy as np
-    from sklearn.preprocessing import MinMaxScaler, StandardScaler
-    from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import LSTM, Dense, Dropout
-    from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
-    import matplotlib.pyplot as plt
-    from datetime import timedelta
-    from sklearn.metrics import classification_report
-    df = df.sort_values("timestamp").reset_index(drop=True)
-
-    # Define features and targets
-    features = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
-    targets = ["so2", "no2", "co", "pm2_5", "pm10"]
-
-    no2_series = df["no2"].copy()
-
-    # Detect NO2 anomalies using z-score method
-    def detect_anomalies_zscore(series, threshold=3):
-        mean = series.mean()
-        std = series.std()
-        z_scores = (series - mean) / std
-        return np.where(np.abs(z_scores) > threshold)[0]
-
-    # Detect
-    no2_anomalies = detect_anomalies_zscore(no2_series, threshold=3)
-    print(f"NO2 anomalies detected: {len(no2_anomalies)} at indices {no2_anomalies}")
-
-    # Create a new column for corrected values (initialize with original values)
-    df["no2_corrected"] = df["no2"]
-
-    # Replace anomaly values with NaN for interpolation
-    df.loc[no2_anomalies, "no2_corrected"] = np.nan
-
-    # Interpolate using time-based or index-based method (choose one)
-    df["no2_corrected"] = df["no2_corrected"].interpolate(method="linear", limit_direction="both")
-    df["no2"]=df["no2_corrected"]
-
-
-    so2_anomalies = detect_anomalies_zscore(df["so2"], threshold=3)
-    print(f"SO₂ anomalies detected: {len(so2_anomalies)} at indices {so2_anomalies[:10]}")
-
-    # Replace with interpolated values
-    df["so2_corrected"] = df["so2"]
-    df.loc[so2_anomalies, "so2_corrected"] = np.nan
-    df["so2_corrected"] = df["so2_corrected"].interpolate(method="linear", limit_direction="both")
-    df["so2"] = df["so2_corrected"]
-
-    # Normalize features
-    scaler = MinMaxScaler()
-    scaled_data = scaler.fit_transform(df[features])
-    scaled_df = pd.DataFrame(scaled_data, columns=features)
-    scaled_df["timestamp"] = df["timestamp"].values
-    scaler = StandardScaler()
-    df["no2"] = scaler.fit_transform(df[["no2"]])
-    # Split into training and testing based on timestamp
-    latest_time = scaled_df["timestamp"].max()
-    cutoff_time = latest_time - timedelta(days=18)
-    train_df = scaled_df[scaled_df["timestamp"] < cutoff_time].drop(columns=["timestamp"])
-    test_df = scaled_df[scaled_df["timestamp"] >= cutoff_time].drop(columns=["timestamp"])
-    n_input = 24
-
-    # Prepare data for training
-    train_generator = TimeseriesGenerator(train_df.values, train_df[targets].values, length=n_input, batch_size=1)
-    import time
-
-    start_time = time.time()
-    model.fit(train_generator, epochs=4, verbose=1)
-    end_time = time.time()
-    # Prepare test data (manual windowing)
-    X_test, y_test = [], []
-    test_values = test_df.values
-    for i in range(len(test_values) - n_input):
-        X_test.append(test_values[i:i+n_input])
-        y_test.append(test_values[i+n_input][[features.index(t) for t in targets]])
-    X_test, y_test = np.array(X_test), np.array(y_test)
-
-    # Predict
-    y_pred = model.predict(X_test)
-    test_timestamps = scaled_df[scaled_df["timestamp"] >= cutoff_time]["timestamp"].values[n_input:]
-    # Predict next 3 days (72 hours ahead)
-    future_steps = 72
-    last_input_seq = test_df.values[-n_input:].copy()  # Last known window
-
-    future_preds = []
-
-    for _ in range(future_steps):
-        pred = model.predict(last_input_seq.reshape(1, n_input, -1), verbose=0)[0]
-        future_preds.append(pred)
-
-        # Create the next input by appending prediction and removing oldest
-        next_input = np.zeros_like(last_input_seq[0])
-        for idx, target in enumerate(targets):
-            target_index = features.index(target)
-            next_input[target_index] = pred[idx]
-        
-        # For non-target features, keep previous last values
-        for idx in range(len(features)):
-            if features[idx] not in targets:
-                next_input[idx] = last_input_seq[-1][idx]
-        
-        last_input_seq = np.vstack([last_input_seq[1:], next_input])
-
-    future_preds = np.array(future_preds)
-
-    # Convert last_timestamp to pandas Timestamp for compatibility with timedelta
-    last_timestamp = pd.Timestamp(test_timestamps[-1])
-
-    # Generate future timestamps (assuming hourly predictions)
-    future_timestamps = [last_timestamp + timedelta(hours=i+1) for i in range(future_steps)]
-
-    # Plot including future predictions
-    fig, axes = plt.subplots(len(targets), 1, figsize=(12, 18))
-
-    for i, target in enumerate(targets):
-        axes[i].plot(test_timestamps, y_test[:, i], label="Actual", color='blue')
-        axes[i].plot(test_timestamps, y_pred[:, i], label="Predicted", linestyle="dashed", color='red')
-        axes[i].plot(future_timestamps, future_preds[:, i], label="Future Forecast", linestyle="dotted", color='green')
-        axes[i].set_title(f'Actual, Predicted & Future Forecast - {target}')
-        axes[i].legend()
-        axes[i].tick_params(axis='x', rotation=45)
-
-    plt.tight_layout()
-    plt.show()
-
-    # Classification Report (Quantile binning: 3 classes - Low, Medium, High)
-    print("\n=== Classification Reports (Quantile Binning) ===\n")
-    for i, target in enumerate(targets):
-        actual_bins = pd.qcut(y_test[:, i], q=3, labels=["Low", "Medium", "High"])
-        pred_bins = pd.qcut(y_pred[:, i], q=3, labels=["Low", "Medium", "High"])
-
-        print(f"\nTarget: {target}")
-        print(classification_report(actual_bins, pred_bins, digits=3))
-
-def fetch_historical_weather(lat, lon, days=10, api_key=None):
+def fetch_historical_weather(lat, lon, days=20, api_key=None):
     API_KEY = settings.OPENWEATHERAPI_KEY
     yesterday = datetime.now().date() - timedelta(days=1)
     end_date = datetime.combine(yesterday, datetime.min.time())
@@ -610,7 +322,7 @@ def fetch_historical_weather(lat, lon, days=10, api_key=None):
     return pd.DataFrame(all_data)
 
 # Function to fetch historical air pollution data (modified to be reusable)
-def fetch_historical_air_pollution(lat, lon, days=10, api_key=None):
+def fetch_historical_air_pollution(lat, lon, days=20, api_key=None):
     API_KEY = settings.OPENWEATHERAPI_KEY
     yesterday = datetime.now().date() - timedelta(days=1)
     end_date = datetime.combine(yesterday, datetime.min.time())
@@ -833,8 +545,6 @@ def fetch_data_for_3_months(LAT, LON, API_KEY):
         for i in range(days):
             timestamp = int((end_date - timedelta(days=i)).timestamp())
             print(i,"temp")
-            print(WEATHER_API)
-            print(API_KEY)
             response = requests.get(
                 WEATHER_API,
                 params={
@@ -906,8 +616,8 @@ def fetch_data_for_3_months(LAT, LON, API_KEY):
         return pd.DataFrame(all_data)
 
     # Fetch weather and air pollution data
-    weather_df = fetch_historical_weather(LAT, LON, days=90)
-    air_pollution_df = fetch_historical_air_pollution(LAT, LON, days=90)
+    weather_df = fetch_historical_weather(LAT, LON, days=20)
+    air_pollution_df = fetch_historical_air_pollution(LAT, LON, days=20)
 
     # Merge datasets on timestamp
     final_df = pd.merge(weather_df, air_pollution_df, on="timestamp", how="inner")
@@ -933,55 +643,365 @@ def get_predictions_and_mitigation(request):
     except ValueError:
         return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
 
-    
+
     industry_type = identify_industry(industry, location)
-    
-    
+
+
     openweather_api_key = settings.OPENWEATHERAPI_KEY
-    
+
     final_df1 = fetch_data_for_3_months(latitude, longitude, openweather_api_key)
     # Anomaly Detection
-    perform_anomaly_detection(final_df1)
-    
+    anomaly_df = perform_anomaly_detection(final_df1.copy()) # Pass a copy to avoid modifying original df
+
     # Clustering
     kmeans, scaler, pca, industry_summary = load_clustering_model(industry_type)
-    pca_coords, cluster_stats, industry_stats, industry_daily_mean, industry_24hr_mean, exceeding, avg_cluster_pollution, new_avg = perform_clustering(kmeans, scaler, pca, industry_summary, final_df1)
-    
+    clustering_results = perform_clustering(kmeans, scaler, pca, industry_summary, final_df1.copy())
+    pca_coords, cluster_stats, industry_stats, industry_daily_mean, industry_24hr_mean, exceeding, avg_cluster_pollution, new_avg = clustering_results
+
     # LSTM
     model = load_lstm_model(industry_type)
-    perform_lstm(model, final_df1)
-    
+    lstm_results = perform_lstm(model, final_df1.copy())
+    future_preds, future_timestamps, y_test, y_pred, test_timestamps, targets_lstm = lstm_results
+
     print(f"Model loaded for industry: {industry}")
+    # Fetch current air pollution data for mitigation strategies
+    current_air_pollution_response = requests.get(
+        f'http://api.openweathermap.org/data/2.5/air_pollution?lat={latitude}&lon={longitude}&appid={settings.OPENWEATHERAPI_KEY}'
+    )
+    current_air_pollution_data = current_air_pollution_response.json().get('list', [])[0].get('components', {}) if current_air_pollution_response.status_code == 200 and current_air_pollution_response.json().get('list') else {}
+    print(current_air_pollution_data)
     
-    if clustering_model:
-        # Fetch historical data for the location
-        openweather_api_key = os.getenv('OPENWEATHERAPI_KEY')
-        weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
-        air_pollution_df = fetch_historical_air_pollution(latitude, longitude, days=10, api_key=openweather_api_key)
-        if not weather_df.empty and not air_pollution_df.empty:
-            final_df = preprocess_data(weather_df, air_pollution_df)
-            X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
-            if X_new.size > 0:
-                predictions = clustering_model.predict(X_new)
-                # Assuming you want to return the last prediction for the next hour
-                last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
-                
-                # Fetch current air pollution data for mitigation strategies
-                current_air_pollution_response = requests.get(
-                    f'http://api.openweathermap.org/data/2.5/air_pollution?lat={latitude}&lon={longitude}&appid={settings.OPENWEATHERAPI_KEY}'
-                )
-                current_air_pollution_data = current_air_pollution_response.json().get('list', [])[0].get('components', {}) if current_air_pollution_response.status_code == 200 and current_air_pollution_response.json().get('list') else {}
-
-                current_air_quality_str = ", ".join([f"{k}: {v}" for k, v in current_air_pollution_data.items()])
-                predicted_air_quality_str = ", ".join([f"{TARGETS[i]}: {last_prediction[i]:.2f}" for i in range(len(TARGETS))])
-                current_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                mitigation_strategies = mitigation_stratergies(industry, location, predicted_air_quality_str, current_air_quality_str, current_date_str)
-
-                return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'predictions': last_prediction, 'targets': TARGETS, 'mitigationStrategies': mitigation_strategies})
-            else:
-                return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'error': 'Not enough data to make a prediction.'})
-        else:
-            return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'error': 'Could not fetch historical data.'})
+    current_air_quality_str = ", ".join([f"{k}: {v}" for k, v in current_air_pollution_data.items()])
+    predicted_air_quality_str = ""
+    if future_preds is not None and len(future_preds) > 0:
+        first_prediction = future_preds[0]
+        predicted_air_quality_str = ", ".join([f"{targets_lstm[i]}: {first_prediction[i]:.2f}" for i in range(len(targets_lstm))])
     else:
-        return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'error': f'Model not loading'})
+        predicted_air_quality_str = "No future predictions available."
+        
+    print(predicted_air_quality_str)
+    current_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    mitigation_strategies = mitigation_stratergies(industry, location, predicted_air_quality_str, current_air_quality_str, current_date_str)
+    print(mitigation_strategies)
+
+    response_data = {
+        'latitude': latitude,
+        'longitude': longitude,
+        'displayName': industry,
+        'targets': TARGETS,
+        'mitigationStrategies': mitigation_strategies,
+        'pca_coords': pca_coords.tolist(),
+        'cluster_stats': cluster_stats.to_dict(),
+        'industry_stats': industry_stats.to_dict(),
+        'industry_daily_mean': industry_daily_mean.to_list(), # Assuming this is a Series
+        'industry_24hr_mean': industry_24hr_mean.to_dict(),
+        'exceeding_limits': exceeding,
+        'average_cluster_pollution': avg_cluster_pollution.to_dict(),
+        'average_industry_pollution': new_avg,
+        'anomaly_data': anomaly_df[['timestamp', 'co', 'no2', 'so2', 'o3', 'pm2_5', 'pm10', 'nh3', 'anomaly']].to_dict(orient='records'),
+        'lstm_predictions': future_preds.tolist(),
+        'lstm_timestamps': [ts.isoformat() for ts in future_timestamps],
+        'lstm_actual': y_test.tolist(),
+        'lstm_predicted': y_pred.tolist(),
+        'lstm_test_timestamps': [ts.isoformat() for ts in test_timestamps],
+        'lstm_targets': targets_lstm
+    }
+    return JsonResponse(response_data)
+
+# Function to load the appropriate model based on industry
+def load_clustering_model(response):
+    print("Loading clustering model") # Added print statement for clarity
+    try:
+        if 'cement' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_cement_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_cement.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_cement.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_cement.csv'))
+        elif 'power' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_power_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_power.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_power.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_power.csv'))
+        elif 'tannery' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_tannery_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_tannery.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_tannery.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_tannery.csv'))
+        elif 'steel' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_steel_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_steel.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_steel.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_steel.csv'))
+        else:
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_cement_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_cement.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_cement.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_cement.csv'))
+        return kmeans, scaler, pca, industry_summary
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        print(f"Error loading clustering model: {e}") # More specific error message
+        return None
+
+def load_lstm_model(response):
+    print("Loading LSTM model") # Added print statement for clarity
+    try:
+        if 'cement' in response.lower():
+            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model_new.pkl'))
+        elif 'power' in response.lower():
+            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_power_model_new.pkl'))
+        elif 'tannery' in response.lower():
+            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_tannery_model_new.pkl'))
+        elif 'steel' in response.lower():
+            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_steel_model_new.pkl'))
+        else:
+            model = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model_new.pkl'))
+        print("returning LSTM model")
+        return model
+    except FileNotFoundError:
+        print(" notLoading LSTM model")
+        return None
+    except Exception as e:
+        print("not  Loading LSTM model")
+        print(f"Error loading LSTM model: {e}") # More specific error message
+        return None
+
+def perform_clustering(kmeans, scaler, pca, industry_summary, new_data):
+    # Features to use
+    features = ["temperature", "humidity", "wind_speed", "pressure",
+                "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
+    pollution_features = ["co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
+
+    # Scale and transform new data
+    scaled_new = scaler.transform(new_data[features])
+    predicted_cluster = kmeans.predict(scaled_new)[0]
+    pca_coords = pca.transform(scaled_new)[0]
+    # --- Pollution Stats ---
+    print(f"\n🔷 New Industry is classified into Cluster {predicted_cluster}")
+
+    # Cluster Stats (3-months)
+    cluster_data = industry_summary[industry_summary["cluster"] == predicted_cluster]
+    cluster_stats = cluster_data[pollution_features].agg(["mean", "min", "max"])
+
+    # New Industry Stats (3-months)
+    industry_stats = new_data[pollution_features].agg(["mean", "min", "max"])
+
+    print("\n📊 Cluster Pollution Statistics (3-month aggregate):")
+    print(cluster_stats.T.round(2))
+
+    print("\n🏭 New Industry Pollution Statistics (3-month data):")
+    print(industry_stats.T.round(2))
+
+    # --- CPCB Regulatory Standards (24-hour average in µg/m³) ---
+    cpcb_limits = {
+        "co": 2000,     # converted mg/m³ → µg/m³
+        "no2": 80,
+        "so2": 80,
+        "o3": 100,
+        "pm2_5": 60,
+        "pm10": 100,
+        "nh3": 400
+    }
+
+    print("\n📏 CPCB Permissible Limits (24-hr average):")
+    for pol, limit in cpcb_limits.items():
+        print(f"{pol.upper():<6}: {limit} µg/m³")
+
+    # --- Check for Pollutants Exceeding Limits ---
+    industry_daily_mean = new_data.groupby(new_data['timestamp'].dt.date)[pollution_features].mean().mean() # Calculate daily mean and then overall mean
+    # --- Take only last 24 hours of data ---
+    last_24hr_data = new_data.tail(24)
+    industry_24hr_mean = last_24hr_data[pollution_features].mean()
+
+    # --- Check for Pollutants Exceeding Limits ---
+    print("\n📏 CPCB Permissible Limits (24-hr average):")
+    for pol, limit in cpcb_limits.items():
+        print(f"{pol.upper():<6}: {limit} µg/m³")
+
+    exceeding = []
+    for pol, limit in cpcb_limits.items():
+        val = industry_24hr_mean[pol]
+        print(pol,val)
+        if val > limit:
+            exceeding.append({'pollutant': pol.upper(), 'value': round(val, 2), 'limit': limit}) # Store as dictionary
+
+    if exceeding:
+        print("\n⚠️ Pollutants exceeding CPCB limits (based on last 24 hours):")
+        for item in exceeding:
+            print(f"• {item['pollutant']}: {item['value']} µg/m³ > {item['limit']} µg/m³")
+    else:
+        print("\n✅ All pollutants are within CPCB permissible limits (last 24 hours).")
+
+    # --- Optional: Overall Pollution Risk ---
+    avg_cluster_pollution = industry_summary.groupby("cluster")[pollution_features].mean().mean(axis=1)
+    new_avg = industry_daily_mean.mean()
+    print(f"\n📌 Average Pollution of New Industry: {new_avg:.2f}")
+
+    if new_avg > avg_cluster_pollution.max():
+        print("⚠️ This industry is more harmful than any existing cluster.")
+    elif new_avg > avg_cluster_pollution.mean():
+        print("⚠️ This industry is relatively harmful.")
+    else:
+        print("✅ This industry is within normal pollution levels.")
+    return pca_coords, cluster_stats, industry_stats, industry_daily_mean, industry_24hr_mean, exceeding, avg_cluster_pollution, new_avg
+
+def perform_anomaly_detection(df):
+    df = df.sort_values("timestamp").reset_index(drop=True)
+    features = df.drop(columns=["timestamp"])
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features)
+
+    iso_forest = IsolationForest(n_estimators=100, contamination=0.05, random_state=42)
+    df["anomaly"] = iso_forest.fit_predict(features_scaled)
+    df["anomaly"] = df["anomaly"].map({1: 1, -1: 0}) # Changed mapping to 1 for anomaly, 0 for normal
+
+    X_train, X_test, y_train, y_test = train_test_split(features_scaled, df["anomaly"], test_size=0.2, random_state=42)
+    rf = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf.fit(X_train, y_train)
+
+    y_pred = rf.predict(X_test)
+    print("Anomaly Detection Classification Report:")
+    print(classification_report(y_test, y_pred))
+    print("Anomaly detection results calculated.")
+    return df
+
+def perform_lstm(model, df):
+    import pandas as pd
+    import numpy as np
+    from sklearn.preprocessing import MinMaxScaler, StandardScaler
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import LSTM, Dense, Dropout
+    from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
+    import matplotlib.pyplot as plt
+    from datetime import timedelta
+    from sklearn.metrics import classification_report
+    df = df.sort_values("timestamp").reset_index(drop=True)
+
+    # Define features and targets
+    features = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
+    targets = ["so2", "no2", "co", "pm2_5", "pm10"]
+
+    no2_series = df["no2"].copy()
+
+    # Detect NO2 anomalies using z-score method
+    def detect_anomalies_zscore(series, threshold=3):
+        mean = series.mean()
+        std = series.std()
+        z_scores = (series - mean) / std
+        return np.where(np.abs(z_scores) > threshold)[0]
+
+    # Detect
+    no2_anomalies = detect_anomalies_zscore(no2_series, threshold=3)
+    print(f"NO2 anomalies detected: {len(no2_anomalies)} at indices {no2_anomalies[:10]}")
+
+    # Create a new column for corrected values (initialize with original values)
+    df["no2_corrected"] = df["no2"]
+
+    # Replace anomaly values with NaN for interpolation
+    df.loc[no2_anomalies, "no2_corrected"] = np.nan
+
+    # Interpolate using time-based or index-based method (choose one)
+    df["no2_corrected"] = df["no2_corrected"].interpolate(method="linear", limit_direction="both")
+    df["no2"]=df["no2_corrected"]
+
+
+    so2_anomalies = detect_anomalies_zscore(df["so2"], threshold=3)
+    print(f"SO₂ anomalies detected: {len(so2_anomalies)} at indices {so2_anomalies[:10]}")
+
+    # Replace with interpolated values
+    df["so2_corrected"] = df["so2"]
+    df.loc[so2_anomalies, "so2_corrected"] = np.nan
+    df["so2_corrected"] = df["so2_corrected"].interpolate(method="linear", limit_direction="both")
+    df["so2"] = df["so2_corrected"]
+
+    # Normalize features
+    print("is this this")
+    scaler = MinMaxScaler()
+    scaled_data = scaler.fit_transform(df[features])
+    scaled_df = pd.DataFrame(scaled_data, columns=features)
+    scaled_df["timestamp"] = df["timestamp"].values
+    scaler_no2 = StandardScaler() # Separate scaler for NO2
+    df["no2"] = scaler_no2.fit_transform(df[["no2"]])
+    # Split into training and testing based on timestamp
+    latest_time = scaled_df["timestamp"].max()
+    cutoff_time = latest_time - timedelta(days=18)
+    train_df = scaled_df[scaled_df["timestamp"] < cutoff_time].drop(columns=["timestamp"])
+    test_df = scaled_df[scaled_df["timestamp"] >= cutoff_time].drop(columns=["timestamp"])
+    n_input = 24
+
+    # Prepare data for training
+    print("is it timesieries")
+
+    train_generator = TimeseriesGenerator(train_df.values, train_df[targets].values, length=n_input, batch_size=1)
+
+    print("is it epoch")
+    model.fit(train_generator, epochs=4, verbose=0)
+    print("done")# Reduced verbosity
+    # Prepare test data (manual windowing)
+    X_test, y_test = [], []
+    test_values = test_df.values
+    for i in range(len(test_values) - n_input):
+        X_test.append(test_values[i:i+n_input])
+        y_test.append(test_values[i+n_input][[features.index(t) for t in targets]])
+    X_test, y_test = np.array(X_test), np.array(y_test)
+
+    # Predict
+    y_pred = model.predict(X_test)
+    test_timestamps = scaled_df[scaled_df["timestamp"] >= cutoff_time]["timestamp"].values[n_input:]
+    # Predict next 3 days (72 hours ahead)
+    future_steps = 72
+    last_input_seq = test_df.values[-n_input:].copy()  # Last known window
+
+    future_preds = []
+
+    for _ in range(future_steps):
+        pred = model.predict(last_input_seq.reshape(1, n_input, -1), verbose=0)[0]
+        future_preds.append(pred)
+
+        # Create the next input by appending prediction and removing oldest
+        next_input = np.zeros_like(last_input_seq[0])
+        for idx, target in enumerate(targets):
+            target_index = features.index(target)
+            next_input[target_index] = pred[idx]
+
+        # For non-target features, keep previous last values
+        for idx in range(len(features)):
+            if features[idx] not in targets:
+                next_input[idx] = last_input_seq[-1][idx]
+
+        last_input_seq = np.vstack([last_input_seq[1:], next_input])
+
+    future_preds = np.array(future_preds)
+
+    # Convert last_timestamp to pandas Timestamp for compatibility with timedelta
+    if len(test_timestamps) > 0:
+        last_timestamp = pd.Timestamp(test_timestamps[-1])
+
+        # Generate future timestamps (assuming hourly predictions)
+        future_timestamps = [last_timestamp + timedelta(hours=i + 1) for i in range(future_steps)]
+    else:
+        future_timestamps = []
+        print("Warning: No test timestamps available for generating future timestamps.")
+
+
+    # Classification Report (Quantile binning: 3 classes - Low, Medium, High)
+    print("\n=== LSTM Classification Reports (Quantile Binning) ===\n")
+    for i, target in enumerate(targets):
+        actual_bins = pd.qcut(y_test[:, i], q=3, labels=["Low", "Medium", "High"], duplicates='drop')
+        pred_bins = pd.qcut(y_pred[:, i], q=3, labels=["Low", "Medium", "High"], duplicates='drop')
+
+        # Ensure both series have the same length after quantile binning
+        min_len = min(len(actual_bins), len(pred_bins))
+        actual_bins = actual_bins[:min_len]
+        pred_bins = pred_bins[:min_len]
+
+        if len(actual_bins) > 0 and len(pred_bins) > 0 and len(np.unique(actual_bins)) > 1 and len(np.unique(pred_bins)) > 1:
+            print(f"\nTarget: {target}")
+            print(classification_report(actual_bins, pred_bins, digits=3, zero_division=0))
+        else:
+            print(f"\nTarget: {target} - Insufficient unique values for classification report.")
+
+    print("LSTM predictions performed.")
+    return future_preds, future_timestamps, y_test, y_pred, test_timestamps, targets

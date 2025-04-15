@@ -373,26 +373,49 @@ document.addEventListener('DOMContentLoaded', function () {
                 return response.json();
             })
             .then(data => {
-                console.log("Prediction Data:", data.predictions);
+                console.log("Full Prediction Data:", data); // Log the entire data object
+                // console.log("Prediction Data:", data.predictions); // Removed as the single prediction is no longer directly available
                 console.log("Mitigation Strategies:", data.mitigationStrategies);
-                // Display prediction data
-                let predictionHTML = '<ul>';
-                if (data.predictions && data.targets) {
-                    for (let i = 0; i < data.predictions.length; i++) {
-                        predictionHTML += `<li>${data.targets[i]}: ${data.predictions[i].toFixed(2)}</li>`;
-                    }
-                } else {
-                    predictionHTML += '<li>No prediction data available.</li>';
-                }
-                predictionHTML += '</ul>';
-                predictionDataContainer.innerHTML = predictionHTML;
-
+    
                 // Display mitigation strategies
                 if (data.mitigationStrategies) {
                     mitigationStrategiesContainer.innerHTML = `<p>${data.mitigationStrategies}</p>`;
                 } else {
                     mitigationStrategiesContainer.innerHTML = '<p>No mitigation strategies available.</p>';
                 }
+    
+                // --- Log the new data received ---
+                console.log("PCA Coordinates:", data.pca_coords);
+                console.log("Cluster Statistics:", data.cluster_stats);
+                console.log("Industry Statistics:", data.industry_stats);
+                console.log("Industry Daily Mean Pollution:", data.industry_daily_mean);
+                console.log("Industry 24-Hour Mean Pollution:", data.industry_24hr_mean);
+                console.log("Exceeding CPCB Limits:", data.exceeding_limits);
+                console.log("Average Cluster Pollution:", data.average_cluster_pollution);
+                console.log("Average Industry Pollution:", data.average_industry_pollution);
+                console.log("Anomaly Data:", data.anomaly_data);
+                console.log("LSTM Predictions:", data.lstm_predictions);
+                console.log("LSTM Timestamps:", data.lstm_timestamps);
+                console.log("LSTM Actual Values:", data.lstm_actual);
+                console.log("LSTM Predicted Values:", data.lstm_predicted);
+                console.log("LSTM Test Timestamps:", data.lstm_test_timestamps);
+                console.log("LSTM Targets:", data.lstm_targets);
+    
+                // You'll now likely want to use the LSTM predictions for your primary prediction display
+                let predictionHTML = '<ul>';
+                if (data.lstm_predictions && data.lstm_targets && data.lstm_predictions.length > 0) {
+                    // Assuming you want to display the first prediction in the LSTM output as the "current" prediction
+                    // You might need to adjust this based on how you want to represent the LSTM predictions
+                    const firstPrediction = data.lstm_predictions[0];
+                    for (let i = 0; i < data.lstm_targets.length; i++) {
+                        predictionHTML += `<li>${data.lstm_targets[i]}: ${firstPrediction[i].toFixed(2)}</li>`;
+                    }
+                } else {
+                    predictionHTML += '<li>No LSTM prediction data available.</li>';
+                }
+                predictionDataContainer.innerHTML = predictionHTML;
+    
+    
                 if (typeof openPredictionPanel === 'function') {
                     openPredictionPanel();
                 }
