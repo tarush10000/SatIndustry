@@ -285,35 +285,143 @@ FEATURES = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "s
 TARGETS = ["so2", "no2", "co", "pm2_5", "pm10"]
 
 # Function to load the appropriate model based on industry
-def load_clustering_model(industry, location):
-    api = settings.GEMINI_API_KEY
-    genai.configure(api_key=api)
-    model = genai.GenerativeModel("gemini-2.0-flash")
-    response = model.generate_content(
-            f"For the given industry: {industry} situated at {location} "
-            f"Return in 2 words whether the industry is a Cement Industry, Power Plant, Tannery, Steel Plant or something else",
-        )
-    print(response.text)
-    response = response.text
-    if 'cement' in response.lower():
-        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model.pkl')
-    elif 'power' in response.lower():
-        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_powerplant_model.pkl')
-    elif 'tannery' in response.lower():
-        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_tannery_model.pkl')
-    elif 'steel' in response.lower():
-        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_steel_model.pkl')
-    else:
-        model_path = os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'trained_cement_model.pkl')
+def load_clustering_model(response):
+    print("Loading model")
     try:
-        print("Loading model from:", model_path)
-        model = joblib.load(model_path)
-        return model
+        if 'cement' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_cement_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_cement.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_cement.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_cement.csv'))
+        elif 'power' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_power_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_power.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_power.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_power.csv'))
+        elif 'tannery' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_tannery_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_tannery.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_tannery.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_tannery.csv'))
+        elif 'steel' in response.lower():
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_steel_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_steel.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_steel.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_steel.csv'))
+        else:
+            kmeans = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'kmeans_cement_model.pkl'))
+            scaler = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'scaler_cement.pkl'))
+            pca = joblib.load(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'pca_cement.pkl'))
+            industry_summary = pd.read_csv(os.path.join(settings.BASE_DIR, 'SatIndustry', 'mainapp', 'models', 'industry_clusters_cement.csv'))
+        return kmeans, scaler, pca, industry_summary
     except FileNotFoundError:
         return None
     except Exception as e:
-        print(f"Error loading model for {industry}: {e}")
+        print(f"Error loading model")
         return None
+
+def perform_clustering(kmeans, scaler, pca, industry_summary, new_data):
+    # Features to use
+    features = ["temperature", "humidity", "wind_speed", "pressure",
+                "co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
+    pollution_features = ["co", "no2", "so2", "o3", "pm2_5", "pm10", "nh3"]
+
+    # Scale and transform new data
+    scaled_new = scaler.transform(new_data[features])
+    predicted_cluster = kmeans.predict(scaled_new)[0]
+    pca_coords = pca.transform(scaled_new)[0]
+
+    # # --- Visualization ---
+    # plt.figure(figsize=(10, 7))
+    # sns.scatterplot(
+    #     data=industry_summary,
+    #     x="PCA1",
+    #     y="PCA2",
+    #     hue="cluster",
+    #     palette="tab10",
+    #     s=200,
+    #     edgecolor='black',
+    #     linewidth=1.2
+    # )
+    # plt.scatter(pca_coords[0], pca_coords[1], c='black', s=250, marker='X', label='New Industry')
+    # plt.text(pca_coords[0] + 0.02, pca_coords[1] + 0.02, "New", fontsize=10, weight='bold')
+    # plt.title(f"New Factory classified into Group {predicted_cluster}", fontsize=14)
+    # plt.xlabel("Environmental Profile Axis 1")
+    # plt.ylabel("Environmental Profile Axis 2")
+    # plt.grid(True)
+    # plt.legend(title="Cluster", bbox_to_anchor=(1.05, 1), loc='upper left')
+    # plt.tight_layout()
+    # plt.show()
+
+    # --- Pollution Stats ---
+    print(f"\n🔷 New Industry is classified into Cluster {predicted_cluster}")
+
+    # Cluster Stats (3-months)
+    cluster_data = industry_summary[industry_summary["cluster"] == predicted_cluster]
+    cluster_stats = cluster_data[pollution_features].agg(["mean", "min", "max"])
+
+    # New Industry Stats (3-months)
+    industry_stats = new_data[pollution_features].agg(["mean", "min", "max"])
+
+    print("\n📊 Cluster Pollution Statistics (3-month aggregate):")
+    print(cluster_stats.T.round(2))
+
+    print("\n🏭 New Industry Pollution Statistics (3-month data):")
+    print(industry_stats.T.round(2))
+
+    # --- CPCB Regulatory Standards (24-hour average in µg/m³) ---
+    cpcb_limits = {
+        "co": 2000,     # converted mg/m³ → µg/m³
+        "no2": 80,
+        "so2": 80,
+        "o3": 100,
+        "pm2_5": 60,
+        "pm10": 100,
+        "nh3": 400
+    }
+
+    print("\n📏 CPCB Permissible Limits (24-hr average):")
+    for pol, limit in cpcb_limits.items():
+        print(f"{pol.upper():<6}: {limit} µg/m³")
+
+    # --- Check for Pollutants Exceeding Limits ---
+    industry_daily_mean = industry_stats.loc["mean"]
+    # --- Take only last 24 hours of data ---
+    last_24hr_data = new_data.tail(24)
+    industry_24hr_mean = last_24hr_data[pollution_features].mean()
+
+    # --- Check for Pollutants Exceeding Limits ---
+    print("\n📏 CPCB Permissible Limits (24-hr average):")
+    for pol, limit in cpcb_limits.items():
+        print(f"{pol.upper():<6}: {limit} µg/m³")
+
+    exceeding = []
+    for pol, limit in cpcb_limits.items():
+        val = industry_24hr_mean[pol]
+        print(pol,val)
+        if val > limit:
+            exceeding.append((pol.upper(), val, limit))
+
+    if exceeding:
+        print("\n⚠️ Pollutants exceeding CPCB limits (based on last 24 hours):")
+        for pol, val, limit in exceeding:
+            print(f"• {pol}: {val:.2f} µg/m³ > {limit} µg/m³")
+    else:
+        print("\n✅ All pollutants are within CPCB permissible limits (last 24 hours).")
+
+
+    # --- Optional: Overall Pollution Risk ---
+    avg_cluster_pollution = industry_summary.groupby("cluster")[pollution_features].mean().mean(axis=1)
+    new_avg = industry_daily_mean.mean()
+    print(f"\n📌 Average Pollution of New Industry: {new_avg:.2f}")
+
+    if new_avg > avg_cluster_pollution.max():
+        print("⚠️ This industry is more harmful than any existing cluster.")
+    elif new_avg > avg_cluster_pollution.mean():
+        print("⚠️ This industry is relatively harmful.")
+    else:
+        print("✅ This industry is within normal pollution levels.")
+    return pca_coords, cluster_stats.T.round(2), industry_stats.T.round(2), industry_daily_mean, industry_24hr_mean, exceeding, avg_cluster_pollution, new_avg
 
 def fetch_historical_weather(lat, lon, days=10, api_key=None):
     API_KEY = settings.OPENWEATHERAPI_KEY
@@ -576,9 +684,11 @@ def get_predictions_and_mitigation(request):
     # Anomaly Detection
     openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
     # task = anomalyfunction_task.delay(latitude, longitude, openweather_api_key)
+    data = ""
     
     # Clustering
-    clustering_model = load_clustering_model(industry_type)
+    kmeans, scaler, pca, industry_summary = load_clustering_model(industry_type)
+    pca_coords, cluster_stats, industry_stats, industry_daily_mean, industry_24hr_mean, exceeding, avg_cluster_pollution, new_avg = perform_clustering(kmeans, scaler, pca, industry_summary, data)
     
     # LSTM
     
