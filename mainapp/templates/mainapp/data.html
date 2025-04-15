@@ -11,73 +11,135 @@
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-velocity"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
-        /* Prediction Panel */
+        /* Dark Mode for Prediction Panel */
         #prediction-panel {
             position: absolute;
-            top: 10px; /* Adjust as needed */
-            left: 10px; /* Adjust as needed */
-            background-color: rgba(255, 255, 255, 0.9);
+            top: 10px;
+            left: 10px;
+            background-color: rgba(30, 30, 30); /* Dark background */
+            color: #f0f0f0; /* Light text */
             padding: 20px;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            z-index: 1000; /* Ensure it's above the map */
-            width: 300px; /* Adjust width as needed */
-            max-height: calc(100vh - 20px); /* Prevent overflow */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6); /* Darker shadow */
+            z-index: 100000;
+            width: 600px;
+            max-height: calc(100vh - 20px - 100px);
             overflow-y: auto;
-            display: none; /* Initially hidden */
+            display: none;
+            direction: rtl; /* For moving scrollbar to the left */
         }
-
+        
+        #prediction-panel::-webkit-scrollbar {
+            width: 8px; /* Adjust scrollbar width as needed */
+        }
+        
+        #prediction-panel::-webkit-scrollbar-thumb {
+            background-color: #555; /* Darker scrollbar thumb */
+            border-radius: 4px;
+        }
+        
+        #prediction-panel::-webkit-scrollbar-track {
+            background-color: #222; /* Very dark scrollbar track */
+        }
+        
         #prediction-panel.open {
             display: block;
         }
-
+        
         #prediction-panel .close-btn {
             position: absolute;
             top: 5px;
             right: 10px;
             font-size: 20px;
-            color: #555;
+            color: #bbb; /* Lighter close button color */
             cursor: pointer;
             border: none;
             background: none;
             padding: 0;
+            direction: ltr; /* Reset text direction for button */
         }
-        /*
-        #prediction-panel .panel-content {
-        } */
-
+        
         #prediction-panel h2 {
             margin-top: 0;
             margin-bottom: 15px;
-            color: #333;
+            color: #eee; /* Lighter heading color */
+            direction: ltr; /* Reset text direction */
         }
-
+        
         #prediction-panel .info-header {
             margin-top: 20px;
             margin-bottom: 10px;
             font-weight: bold;
-            color: #333;
+            color: #ddd; /* Lighter info header color */
+            direction: ltr; /* Reset text direction */
         }
-
+        
         #prediction-data p,
         #mitigation-strategies p {
             line-height: 1.6;
-            color: #666;
+            color: #ccc; /* Lighter paragraph text color */
+            direction: ltr; /* Reset text direction */
         }
-
+        
         /* Style for the close button inside the panel */
         #closePredictionBtn {
             position: absolute;
             top: 10px;
             right: 10px;
             font-size: 20px;
-            color: #555;
+            color: #bbb; /* Lighter close button color */
             cursor: pointer;
             border: none;
             background: none;
             padding: 0;
+            direction: ltr; /* Reset text direction for button */
+        }
+        
+        /* Improved Table Styling for Dark Mode */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            color: #f0f0f0; /* Light text in table */
+            direction: ltr; /* Reset text direction */
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid #555; /* Darker border for table cells */
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .data-table th {
+            background-color: #444; /* Darker background for table header */
+            font-weight: bold;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background-color: #333; /* Slightly lighter dark background for even rows */
+        }
+        
+        /* Chart Styling */
+        .chart-container {
+            width: 100%;
+            height: 300px; /* Adjust height as needed */
+            margin-bottom: 20px;
+            border: 1px solid #fff; /* Thin white border */
+            border-radius: 5px; /* Rounded edges */
+            overflow: hidden; /* Ensure rounded edges don't get cut off */
+            direction: ltr; /* Reset text direction for charts */
+        }
+        
+        /* Move scrollbar to the left */
+        #prediction-panel > * {
+            direction: ltr; /* Reset direction for content inside the panel */
+        }
+
+        .apexcharts-tooltip {
+            background:rgb(39, 39, 39);
+            color: white;
         }
     </style>
 </head>
@@ -90,6 +152,8 @@
         <div class="panel-content">
             <h2>Pollution Prediction</h2>
             <div id="prediction-data">
+                <div id="chart-pm25"></div>
+                <div id="chart-pm10"></div>
                 <p>Loading prediction data...</p>
             </div>
             <div class="info-header">Mitigation Strategies</div>

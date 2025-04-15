@@ -682,7 +682,7 @@ def get_predictions_and_mitigation(request):
     print(predicted_air_quality_str)
     current_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    mitigation_strategies = mitigation_stratergies(industry, location, predicted_air_quality_str, current_air_quality_str, current_date_str)
+    mitigation_strategies = mitigation_stratergies(industry, location, str(predicted_air_quality_str), str(current_air_quality_str), current_date_str)
     print(mitigation_strategies)
 
     response_data = {
@@ -701,10 +701,10 @@ def get_predictions_and_mitigation(request):
         'average_industry_pollution': new_avg,
         'anomaly_data': anomaly_df[['timestamp', 'co', 'no2', 'so2', 'o3', 'pm2_5', 'pm10', 'nh3', 'anomaly']].to_dict(orient='records'),
         'lstm_predictions': future_preds.tolist(),
-        'lstm_timestamps': [ts.isoformat() for ts in future_timestamps],
+        'lstm_timestamps': [pd.to_datetime(ts).isoformat() for ts in future_timestamps],
         'lstm_actual': y_test.tolist(),
         'lstm_predicted': y_pred.tolist(),
-        'lstm_test_timestamps': [ts.isoformat() for ts in test_timestamps],
+        'lstm_test_timestamps': [pd.to_datetime(ts).isoformat() for ts in test_timestamps],
         'lstm_targets': targets_lstm
     }
     return JsonResponse(response_data)

@@ -360,6 +360,73 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     };
 
+    function createDataTable(title, data, description = "") {
+        let html = `<div class="info-header">${title}</div>`;
+        if (description) {
+            html += `<p class="info-description">${description}</p>`;
+        }
+        html += '<table class="data-table">';
+        if (Object.keys(data).length > 0) {
+            const keys = Object.keys(data);
+            const firstItem = data[keys[0]];
+    
+            // Create table header
+            html += '<thead><tr>';
+            if (typeof firstItem === 'object' && firstItem !== null) {
+                html += '<th>Pollutant</th>';
+                for (const key in firstItem) {
+                    if (firstItem.hasOwnProperty(key)) {
+                        html += `<th>${key.charAt(0).toUpperCase() + key.slice(1)}</th>`; // Capitalize keys
+                    }
+                }
+            } else {
+                html += '<th>Cluster</th><th>Average Pollution</th>';
+            }
+            html += '</tr></thead><tbody>';
+    
+            // Create table rows
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    html += '<tr>';
+                    if (typeof firstItem === 'object' && firstItem !== null) {
+                        html += `<td>${key.toUpperCase()}</td>`; // Pollutant name
+                        for (const stat in firstItem) {
+                            if (firstItem.hasOwnProperty(stat)) {
+                                html += `<td>${data[key][stat].toFixed(2)}</td>`; // Display with 2 decimal places
+                            }
+                        }
+                    } else {
+                        html += `<td>${key}</td><td>${data[key].toFixed(2)}</td>`; // Cluster ID and average
+                    }
+                    html += '</tr>';
+                }
+            }
+            html += '</tbody></table>';
+        } else {
+            html += '<p>No data available.</p>';
+        }
+        return html;
+    }
+    
+    function createComparisonTable(industryStats, clusterStats) {
+        let html = '<div class="info-header">Industry vs. Cluster (Mean Values)</div>';
+        html += '<table class="data-table">';
+        html += '<thead><tr><th>Pollutant</th><th>Industry Mean</th><th>Cluster Mean</th></tr></thead><tbody>';
+    
+        for (const pollutant in industryStats) {
+            if (industryStats.hasOwnProperty(pollutant) && clusterStats.hasOwnProperty(pollutant)) {
+                html += '<tr>';
+                html += `<td>${pollutant.toUpperCase()}</td>`;
+                html += `<td>${industryStats[pollutant].mean.toFixed(2)}</td>`;
+                html += `<td>${clusterStats[pollutant].mean.toFixed(2)}</td>`;
+                html += '</tr>';
+            }
+        }
+    
+        html += '</tbody></table>';
+        return html;
+    }
+
     function fetchPredictionsAndMitigation(industryName, latitude, longitude, location) {
         const url = `/get_predictions_and_mitigation/?industry=${encodeURIComponent(industryName)}&latitude=${latitude}&longitude=${longitude}&location=${encodeURIComponent(location)}`;
         console.log("Fetching predictions and mitigation from:", url);
@@ -374,8 +441,9 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(data => {
                 console.log("Full Prediction Data:", data); // Log the entire data object
-                // console.log("Prediction Data:", data.predictions); // Removed as the single prediction is no longer directly available
-                console.log("Mitigation Strategies:", data.mitigationStrategies);
+                const predictionDataContainer = document.getElementById('prediction-data');
+                const mitigationStrategiesContainer = document.getElementById('mitigation-strategies');
+                // console.log("Mitigation Strategies:", data.mitigationStrategies);
     
                 // Display mitigation strategies
                 if (data.mitigationStrategies) {
@@ -385,40 +453,178 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
     
                 // --- Log the new data received ---
-                console.log("PCA Coordinates:", data.pca_coords);
-                console.log("Cluster Statistics:", data.cluster_stats);
-                console.log("Industry Statistics:", data.industry_stats);
-                console.log("Industry Daily Mean Pollution:", data.industry_daily_mean);
-                console.log("Industry 24-Hour Mean Pollution:", data.industry_24hr_mean);
-                console.log("Exceeding CPCB Limits:", data.exceeding_limits);
-                console.log("Average Cluster Pollution:", data.average_cluster_pollution);
-                console.log("Average Industry Pollution:", data.average_industry_pollution);
-                console.log("Anomaly Data:", data.anomaly_data);
-                console.log("LSTM Predictions:", data.lstm_predictions);
-                console.log("LSTM Timestamps:", data.lstm_timestamps);
-                console.log("LSTM Actual Values:", data.lstm_actual);
-                console.log("LSTM Predicted Values:", data.lstm_predicted);
-                console.log("LSTM Test Timestamps:", data.lstm_test_timestamps);
-                console.log("LSTM Targets:", data.lstm_targets);
+                // console.log("PCA Coordinates:", data.pca_coords);
+                // console.log("Cluster Statistics:", data.cluster_stats);
+                // console.log("Industry Statistics:", data.industry_stats);
+                // console.log("Industry Daily Mean Pollution:", data.industry_daily_mean);
+                // console.log("Industry 24-Hour Mean Pollution:", data.industry_24hr_mean);
+                // console.log("Exceeding CPCB Limits:", data.exceeding_limits);
+                // console.log("Average Cluster Pollution:", data.average_cluster_pollution);
+                // console.log("Average Industry Pollution:", data.average_industry_pollution);
+                // console.log("Anomaly Data:", data.anomaly_data);
+                // console.log("LSTM Predictions:", data.lstm_predictions);
+                // console.log("LSTM Timestamps:", data.lstm_timestamps);
+                // console.log("LSTM Actual Values:", data.lstm_actual);
+                // console.log("LSTM Predicted Values:", data.lstm_predicted);
+                // console.log("LSTM Test Timestamps:", data.lstm_test_timestamps);
+                // console.log("LSTM Targets:", data.lstm_targets);
     
-                // You'll now likely want to use the LSTM predictions for your primary prediction display
-                let predictionHTML = '<ul>';
-                if (data.lstm_predictions && data.lstm_targets && data.lstm_predictions.length > 0) {
-                    // Assuming you want to display the first prediction in the LSTM output as the "current" prediction
-                    // You might need to adjust this based on how you want to represent the LSTM predictions
-                    const firstPrediction = data.lstm_predictions[0];
-                    for (let i = 0; i < data.lstm_targets.length; i++) {
-                        predictionHTML += `<li>${data.lstm_targets[i]}: ${firstPrediction[i].toFixed(2)}</li>`;
+                let tableHTML = '';
+                tableHTML += createDataTable('Cluster Statistics', data.cluster_stats, `Average pollution statistics for the cluster that ${industryName} belongs to.`);
+                tableHTML += createDataTable('Industry Statistics', data.industry_stats, `Pollution statistics for the selected industry: ${industryName}.`);
+                tableHTML += createDataTable('Average Cluster Pollution', data.average_cluster_pollution);
+
+                // Create the comparison table
+                tableHTML += createComparisonTable(data.industry_stats, data.cluster_stats);
+
+                let otherInfoHTML = '';
+                otherInfoHTML += `<div class="info-header">Average Industry Pollution</div><p>${data.average_industry_pollution}</p>`;
+                // otherInfoHTML += `<div class="info-header">Exceeding CPCB Limits</div><p>${data.exceeding_limits}</p>`;
+    
+                predictionDataContainer.innerHTML = tableHTML + otherInfoHTML;
+    
+                // --- Prepare data for charts ---
+                const anomalyData = data.anomaly_data;
+                const lstmTimestamps = data.lstm_timestamps;
+                const lstmPredictions = data.lstm_predictions;
+                const lstmActual = data.lstm_actual;
+                const lstmPredicted = data.lstm_predicted;
+                const lstmTestTimestamps = data.lstm_test_timestamps;
+                const lstmTargets = data.lstm_targets;
+    
+                const createApexPollutantChart = (target, anomalyData, lstmTimestamps, lstmPredictions, lstmActual, lstmPredicted, lstmTestTimestamps, lstmTargets) => {
+                    const chartId = `chart-${target.replace(/[^a-zA-Z0-9]/g, '')}`;
+                    let chartContainer = document.getElementById(chartId);
+    
+                    if (!chartContainer) {
+                        chartContainer = document.createElement('div');
+                        chartContainer.id = chartId;
+                        chartContainer.classList.add('chart-container'); // Add a class for styling if needed
+                        predictionDataContainer.appendChild(chartContainer);
                     }
-                } else {
-                    predictionHTML += '<li>No LSTM prediction data available.</li>';
-                }
-                predictionDataContainer.innerHTML = predictionHTML;
+    
+                    const targetIndex = lstmTargets.indexOf(target);
+                    const actualData = lstmActual.map(item => item[targetIndex]);
+                    const predictedData = lstmPredicted.map(item => item[targetIndex]);
+                    const forecastData = lstmPredictions.map(item => item[targetIndex]);
+    
+                    const anomalyPoints = anomalyData
+                        .filter(item => item.anomaly && item[target.toLowerCase().replace('.', '_')])
+                        .map(item => ({
+                            x: new Date(item.timestamp).getTime(), // ApexCharts uses milliseconds for dates
+                            y: item[target.toLowerCase().replace('.', '_')]
+                        }));
+    
+                    const options = {
+                        series: [
+                            {
+                                name: `Actual ${target}`,
+                                data: lstmTestTimestamps.map((ts, index) => [new Date(ts).getTime(), actualData[index]])
+                            },
+                            {
+                                name: `Predicted ${target}`,
+                                data: lstmTestTimestamps.map((ts, index) => [new Date(ts).getTime(), predictedData[index]])
+                            },
+                            {
+                                name: `Forecasted ${target}`,
+                                data: lstmTimestamps.map((ts, index) => [new Date(ts).getTime(), forecastData[index]])
+                            },
+                            {
+                                name: 'Anomalies',
+                                type: 'scatter',
+                                data: anomalyPoints,
+                                show: false
+                            }
+                        ],
+                        chart: {
+                            id: chartId,
+                            type: 'line',
+                            height: 350, // Adjust as needed
+                            toolbar: {
+                                show: true
+                            },
+                            foreColor: '#fff', // Set default text color to white
+                            background: '#111' // Optional: Set a dark background for better contrast
+                        },
+                        xaxis: {
+                            type: 'datetime',
+                            labels: {
+                                style: {
+                                    colors: '#fff' // White color for x-axis labels
+                                },
+                                format: 'dd MMM HH:mm' // Customize date format
+                            },
+                            max: new Date().getTime() + (4 * 24 * 60 * 60 * 1000) // Set max date to 4 days after present
+                        },
+                        yaxis: {
+                            title: {
+                                text: target,
+                                style: {
+                                    color: '#fff' // White color for y-axis title
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    colors: '#fff' // White color for y-axis labels
+                                }
+                            },
+                            decimalsInFloat: 2
+                        },
+                        markers: {
+                            size: [4, 4, 4, 8], // Adjust marker sizes for each series
+                            colors: ['blue', 'orange', 'green', 'red']
+                        },
+                        stroke: {
+                            curve: 'smooth'
+                        },
+                        tooltip: {
+                            style: {
+                                background: 'rgba(50, 50, 50)', // Grey background with some transparency
+                                color: '#000', // White text color for tooltip
+                                borderColor: '#777'
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                colors: '#fff' // White color for legend text
+                            }
+                        },
+                        grid: {
+                            borderColor: '#444' // Optional: Adjust grid line color for better visibility on dark background
+                        }
+                    };
+    
+                    const chart = new ApexCharts(chartContainer, options);
+                    chart.render();
+                };
+    
+                lstmTargets.forEach(target => {
+                    createApexPollutantChart(target, anomalyData, lstmTimestamps, lstmPredictions, lstmActual, lstmPredicted, lstmTestTimestamps, lstmTargets);
+                });
     
     
                 if (typeof openPredictionPanel === 'function') {
                     openPredictionPanel();
                 }
+    
+                // // You'll now likely want to use the LSTM predictions for your primary prediction display
+                // let predictionHTML = '<ul>';
+                // if (data.lstm_predictions && data.lstm_targets && data.lstm_predictions.length > 0) {
+                //     // Assuming you want to display the first prediction in the LSTM output as the "current" prediction
+                //     // You might need to adjust this based on how you want to represent the LSTM predictions
+                //     const firstPrediction = data.lstm_predictions[0];
+                //     for (let i = 0; i < data.lstm_targets.length; i++) {
+                //         predictionHTML += `<li>${data.lstm_targets[i]}: ${firstPrediction[i].toFixed(2)}</li>`;
+                //     }
+                // } else {
+                //     predictionHTML += '<li>No LSTM prediction data available.</li>';
+                // }
+                // predictionDataContainer.innerHTML = predictionHTML;
+    
+    
+                // if (typeof openPredictionPanel === 'function') {
+                //     openPredictionPanel();
+                // }
             })
             .catch(error => {
                 console.error("Error fetching predictions and mitigation:", error);
