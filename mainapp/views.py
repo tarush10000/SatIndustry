@@ -273,6 +273,8 @@ import joblib
 import pandas as pd
 from datetime import datetime, timedelta
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import IsolationForest, RandomForestClassifier
 import google.generativeai as genai
 
 # Configuration for the model
