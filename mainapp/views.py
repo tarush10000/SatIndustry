@@ -283,7 +283,7 @@ FEATURES = ["temperature", "humidity", "wind_speed", "pressure", "co", "no2", "s
 TARGETS = ["so2", "no2", "co", "pm2_5", "pm10"]
 
 # Function to load the appropriate model based on industry
-def load_industry_model(industry, location):
+def load_clustering_model(industry, location):
     api = settings.GEMINI_API_KEY
     genai.configure(api_key=api)
     model = genai.GenerativeModel("gemini-2.0-flash")
@@ -497,7 +497,7 @@ def get_coordinates_here(request):
                 display_name = feature['properties']['formatted']
 
                 # Load the appropriate model
-                model = load_industry_model(industry, location_name)
+                model = load_clustering_model(industry, location_name)
                 if model:
                     # Fetch historical data for the location
                     openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
@@ -540,13 +540,25 @@ def get_coordinates_here(request):
             return JsonResponse({'error': f'Error processing request: {e}'}, status=500)
     else:
         return JsonResponse({'error': 'Missing location or industry query parameter'}, status=400)
-    
-    
+
+def identify_industry(industry, location):
+    api = settings.GEMINI_API_KEY
+    genai.configure(api_key=api)
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    response = model.generate_content(
+            f"For the given industry: {industry} situated at {location} "
+            f"Return in 2 words whether the industry is a Cement Industry, Power Plant, Tannery, Steel Plant or something else",
+        )
+    print(response.text)
+    response = response.text
+    return response
+
 @require_GET
 def get_predictions_and_mitigation(request):
     industry = request.GET.get('industry')
     latitude_str = request.GET.get('latitude')
     longitude_str = request.GET.get('longitude')
+    location = request.GET.get('location')
 
     if not industry or not latitude_str or not longitude_str:
         return JsonResponse({'error': 'Missing industry, latitude, or longitude'}, status=400)
@@ -557,12 +569,21 @@ def get_predictions_and_mitigation(request):
     except ValueError:
         return JsonResponse({'error': 'Invalid latitude or longitude'}, status=400)
 
-    location_name = industry # Use the fetched display name for model loading
-
-    # Load the appropriate model
-    model = load_industry_model(industry, location_name)
+    industry_type = identify_industry(industry, location)
+    
+    # Anomaly Detection
+    openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
+    # task = anomalyfunction_task.delay(latitude, longitude, openweather_api_key)
+    
+    # Clustering
+    clustering_model = load_clustering_model(industry_type)
+    
+    # LSTM
+    
+    
     print(f"Model loaded for industry: {industry}")
-    if model:
+    
+    if clustering_model:
         # Fetch historical data for the location
         openweather_api_key = os.getenv('OPENWEATHER_API_KEY')
         weather_df = fetch_historical_weather(latitude, longitude, days=10, api_key=openweather_api_key)
@@ -571,7 +592,7 @@ def get_predictions_and_mitigation(request):
             final_df = preprocess_data(weather_df, air_pollution_df)
             X_new = create_sequences(final_df[FEATURES], SEQ_LENGTH)
             if X_new.size > 0:
-                predictions = model.predict(X_new)
+                predictions = clustering_model.predict(X_new)
                 # Assuming you want to return the last prediction for the next hour
                 last_prediction = predictions[-1].tolist() if predictions.size > 0 else []
                 
@@ -585,7 +606,7 @@ def get_predictions_and_mitigation(request):
                 predicted_air_quality_str = ", ".join([f"{TARGETS[i]}: {last_prediction[i]:.2f}" for i in range(len(TARGETS))])
                 current_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                mitigation_strategies = mitigation_stratergies(industry, location_name, predicted_air_quality_str, current_air_quality_str, current_date_str)
+                mitigation_strategies = mitigation_stratergies(industry, location, predicted_air_quality_str, current_air_quality_str, current_date_str)
 
                 return JsonResponse({'latitude': latitude, 'longitude': longitude, 'displayName': industry, 'predictions': last_prediction, 'targets': TARGETS, 'mitigationStrategies': mitigation_strategies})
             else:

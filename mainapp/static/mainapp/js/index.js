@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             row.dataset.url = industry.url; // Store the URL in a data attribute
                             row.dataset.lat = industry.latitude; // Store latitude in row.dataset.lat
                             row.dataset.lon = industry.longitude; // Store longitude in row.dataset.lon
+                            row.dataset.industry = industry.name; // Store industry name in row.dataset.industry
 
                             const nameCell = document.createElement('td');
                             nameCell.textContent = industry.name;
@@ -71,7 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const industryName = clickedRow.querySelector('td:first-child').textContent;
                                 const latitude = clickedRow.dataset.lat;
                                 const longitude = clickedRow.dataset.lon;
-                                window.location.href = `${clickedRow.dataset.url}&industry=${encodeURIComponent(industryName)}&latitude=${latitude}&longitude=${longitude}`;
+                                const location = clickedRow.querySelector('td:nth-child(2)').textContent;
+                                console.log('Row clicked:', industryName, latitude, longitude, location);
+                                window.location.href = `${clickedRow.dataset.url}&industry=${encodeURIComponent(industryName)}&latitude=${latitude}&longitude=${longitude}&location=${encodeURIComponent(location)}`;
                             }
                         });
 

@@ -279,11 +279,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const latitudeFromURL = urlParams.get('latitude');
     const longitudeFromURL = urlParams.get('longitude');
     const industryNameFromURL = urlParams.get('industry');
+    const locationNameFromURL = urlParams.get('location');
 
     if (latitudeFromURL && longitudeFromURL && industryNameFromURL) {
         const lat = parseFloat(latitudeFromURL);
         const lon = parseFloat(longitudeFromURL);
         const displayName = industryNameFromURL;
+        const locationName = locationNameFromURL || industryNameFromURL;
 
         if (!isNaN(lat) && !isNaN(lon)) {
             console.log("Latitude from URL:", lat);
@@ -297,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 fetchData(lat, lon);
             }
             document.getElementById('search-input').value = displayName;
-            fetchPredictionsAndMitigation(displayName, lat, lon);
+            fetchPredictionsAndMitigation(displayName, lat, lon, locationName);
         } else {
             console.error("Invalid latitude or longitude in the URL.");
             alert("Invalid coordinates provided in the URL.");
@@ -358,8 +360,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     };
 
-    function fetchPredictionsAndMitigation(industryName, latitude, longitude) {
-        const url = `/get_predictions_and_mitigation/?industry=${encodeURIComponent(industryName)}&latitude=${latitude}&longitude=${longitude}`;
+    function fetchPredictionsAndMitigation(industryName, latitude, longitude, location) {
+        const url = `/get_predictions_and_mitigation/?industry=${encodeURIComponent(industryName)}&latitude=${latitude}&longitude=${longitude}&location=${encodeURIComponent(location)}`;
         console.log("Fetching predictions and mitigation from:", url);
         fetch(url)
             .then(response => {
