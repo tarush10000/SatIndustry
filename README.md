@@ -1,11 +1,9 @@
-# SatIndustry - TARP Project
-
-**VIT Vellore | [Year: 2025]**
+# SatIndustry
 
 ## Overview
 ![image](https://github.com/user-attachments/assets/ba43917c-8b1f-4310-9074-ba563dab68c8)
 
-**SatIndustry** is a web application developed as part of the Technical Answers to Real-World Problems (TARP) initiative at VIT Vellore. It utilizes satellite data and machine learning to monitor, predict, and analyze environmental pollution — especially industrial air pollution — in real-time. The platform is designed to provide transparency, promote sustainable practices, and enable data-driven policy interventions.
+**SatIndustry** is a web application developed as part of the Technical Answers to Real-World Problems (TARP) subject at VIT Vellore. It utilizes satellite data and machine learning to monitor, predict, and analyze environmental pollution — especially industrial air pollution — in real-time. The platform is designed to provide transparency, promote sustainable practices, and enable data-driven policy interventions.
 
 ## Project Goals
 
